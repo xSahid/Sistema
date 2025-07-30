@@ -5,112 +5,120 @@ const Header = () => {
   const { user } = useAppContext();
 
   return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
-            <Link to="/" className="text-xl font-bold text-gray-900">
-              AppAlze
-            </Link>
-          </div>
+    <header className="header">
+      <div className="header-content">
+        <Link to="/" className="logo">
+          SIP - Sistema Integral de Proveedores
+        </Link>
+        
+        <nav className="nav">
+          <Link to="/" className="nav-link">
+            Inicio
+          </Link>
           
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-              Inicio
-            </Link>
-            
-            {user ? (
-              <>
-                <Link to="/dashboard" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Dashboard
-                </Link>
-                
-                {/* Menú según rol del usuario */}
-                {user.role === 'provider' && (
-                  <>
-                    <Link to="/providers/dashboard" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Mi Panel
-                    </Link>
-                    <Link to="/providers/quotations" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Cotizaciones
-                    </Link>
-                    <Link to="/providers/invoices" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Facturas
-                    </Link>
-                  </>
-                )}
-                
-                {user.role === 'purchaser' && (
-                  <>
-                    <Link to="/purchases/dashboard" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Compras
-                    </Link>
-                    <Link to="/purchases/quotations" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Cotizaciones
-                    </Link>
-                    <Link to="/purchases/orders" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Órdenes
-                    </Link>
-                  </>
-                )}
-                
-                {user.role === 'finance' && (
-                  <>
-                    <Link to="/finance/dashboard" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Finanzas
-                    </Link>
-                    <Link to="/finance/payments" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Pagos
-                    </Link>
-                    <Link to="/finance/plans" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Planes
-                    </Link>
-                  </>
-                )}
-                
-                {user.role === 'admin' && (
-                  <>
-                    <Link to="/admin/dashboard" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Admin
-                    </Link>
-                    <Link to="/admin/users" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Usuarios
-                    </Link>
-                    <Link to="/admin/reports" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                      Reportes
-                    </Link>
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                <Link to="/about" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Acerca de
-                </Link>
-                <Link to="/contact" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                  Contacto
-                </Link>
-                <Link to="/providers/register" className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                  Registrarse
-                </Link>
-              </>
-            )}
-          </nav>
-          
-          <div className="flex items-center space-x-4">
-            {user ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">Hola, {user.name}</span>
-                <button className="text-gray-700 hover:text-gray-900 text-sm">
-                  Cerrar Sesión
-                </button>
-              </div>
-            ) : (
-              <Link to="/login" className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium">
-                Iniciar Sesión
+          {user ? (
+            <>
+              <Link to="/dashboard" className="nav-link">
+                Dashboard
               </Link>
-            )}
-          </div>
+              
+              {/* Menú según rol del usuario */}
+              {user.role === 'provider' && (
+                <>
+                  <Link to="/providers/dashboard" className="nav-link">
+                    Mi Panel
+                  </Link>
+                  <Link to="/providers/quotations" className="nav-link">
+                    Cotizaciones
+                  </Link>
+                  <Link to="/providers/invoices" className="nav-link">
+                    Facturas
+                  </Link>
+                  <Link to="/providers/payments" className="nav-link">
+                    Pagos
+                  </Link>
+                </>
+              )}
+              
+              {user.role === 'purchaser' && (
+                <>
+                  <Link to="/purchases/dashboard" className="nav-link">
+                    Compras
+                  </Link>
+                  <Link to="/purchases/quotations" className="nav-link">
+                    Cotizaciones
+                  </Link>
+                  <Link to="/purchases/orders" className="nav-link">
+                    Órdenes
+                  </Link>
+                </>
+              )}
+              
+              {user.role === 'finance' && (
+                <>
+                  <Link to="/finance/dashboard" className="nav-link">
+                    Finanzas
+                  </Link>
+                  <Link to="/finance/payments" className="nav-link">
+                    Pagos
+                  </Link>
+                  <Link to="/finance/plans" className="nav-link">
+                    Planes
+                  </Link>
+                </>
+              )}
+              
+              {user.role === 'admin' && (
+                <>
+                  <Link to="/admin/dashboard" className="nav-link">
+                    Admin
+                  </Link>
+                  <Link to="/admin/users" className="nav-link">
+                    Usuarios
+                  </Link>
+                  <Link to="/admin/reports" className="nav-link">
+                    Reportes
+                  </Link>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <Link to="/about" className="nav-link">
+                Acerca de
+              </Link>
+              <Link to="/contact" className="nav-link">
+                Contacto
+              </Link>
+              <Link to="/providers/register" className="btn-register">
+                Registrarse como Proveedor
+              </Link>
+            </>
+          )}
+        </nav>
+        
+        <div className="nav">
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.875rem' }}>
+                Hola, {user.name}
+              </span>
+              <button style={{ 
+                color: 'rgba(255, 255, 255, 0.8)', 
+                background: 'none', 
+                border: 'none', 
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'color 0.3s ease'
+              }}>
+                Cerrar Sesión
+              </button>
+            </div>
+          ) : (
+            <Link to="/login" className="nav-link">
+              Iniciar Sesión
+            </Link>
+          )}
         </div>
       </div>
     </header>

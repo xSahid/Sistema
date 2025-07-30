@@ -1,33 +1,34 @@
 const Footer = () => {
   return (
-    <footer className="bg-gray-800 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div>
-            <h3 className="text-lg font-semibold mb-4">AppAlze</h3>
-            <p className="text-gray-300">
-              Tu aplicación moderna y funcional desarrollada con React.
+    <footer className="footer">
+      <div className="footer-content">
+        <div className="footer-grid">
+          <div className="footer-section">
+            <h3>SIP - Sistema Integral de Proveedores</h3>
+            <p>
+              Plataforma web innovadora para la gestión integral de proveedores y procesos de compra.
             </p>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Enlaces</h3>
-            <ul className="space-y-2">
-              <li><a href="/" className="text-gray-300 hover:text-white">Inicio</a></li>
-              <li><a href="/about" className="text-gray-300 hover:text-white">Acerca de</a></li>
-              <li><a href="/contact" className="text-gray-300 hover:text-white">Contacto</a></li>
+          <div className="footer-section">
+            <h3>Módulos</h3>
+            <ul>
+              <li><a href="/providers/register">Registro de Proveedores</a></li>
+              <li><a href="/purchases/quotations">Cotizaciones</a></li>
+              <li><a href="/finance/payments">Pagos</a></li>
             </ul>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Contacto</h3>
-            <p className="text-gray-300">
-              Email: info@appalze.com<br />
-              Teléfono: +1 234 567 890
+          <div className="footer-section">
+            <h3>Soporte</h3>
+            <p>
+              Email: soporte@sip.com<br />
+              Teléfono: +52 55 1234 5678<br />
+              Horario: Lunes a Viernes 9:00 - 18:00
             </p>
           </div>
         </div>
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-          <p className="text-gray-300">
-            © 2024 AppAlze. Todos los derechos reservados.
+        <div className="footer-bottom">
+          <p>
+            © 2024 SIP - Sistema Integral de Proveedores. Todos los derechos reservados.
           </p>
         </div>
       </div>
