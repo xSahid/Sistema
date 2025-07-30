@@ -12,6 +12,8 @@ interface AppContextType {
   login: (user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -22,6 +24,10 @@ interface AppProviderProps {
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    const saved = localStorage.getItem('darkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const login = (userData: User) => {
     setUser(userData);
@@ -31,6 +37,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setUser(null);
   };
 
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    localStorage.setItem('darkMode', JSON.stringify(newMode));
+  };
+
   const isAuthenticated = !!user;
 
   const value: AppContextType = {
@@ -38,6 +50,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     login,
     logout,
     isAuthenticated,
+    isDarkMode,
+    toggleDarkMode,
   };
 
   return (

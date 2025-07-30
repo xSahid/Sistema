@@ -30,7 +30,7 @@ const Footer: React.FC = () => {
         </div>
         <div className="footer-bottom">
           <p>
-            © 2024 SIP - Sistema Integral de Proveedores. Todos los derechos reservados.
+            © 2025 SIP - Sistema Integral de Proveedores. Todos los derechos reservados.
           </p>
         </div>
       </div>
