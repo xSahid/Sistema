@@ -3,12 +3,12 @@ import { AppProvider } from './context/AppContext';
 import router from './routes/AppRoutes';
 import './styles/index.css';
 
-function App() {
+const App: React.FC = () => {
   return (
     <AppProvider>
       <RouterProvider router={router} />
     </AppProvider>
   );
-}
+};
 
-export default App;
+export default App; 
