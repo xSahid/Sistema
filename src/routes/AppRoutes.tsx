@@ -6,12 +6,17 @@ import Contact from '../pages/Contact';
 import ProviderRegistration from '../pages/providers/ProviderRegistration';
 import ProviderDashboard from '../pages/providers/ProviderDashboard';
 import PurchaseDashboard from '../pages/purchases/PurchaseDashboard';
-import QuotationsPage from '../pages/purchases/QuotationsPage';
 import NewRequestPage from '../pages/purchases/NewRequestPage';
+import QuotationsPage from '../pages/purchases/QuotationsPage';
 import CreateOrderPage from '../pages/purchases/CreateOrderPage';
 import FinanceDashboard from '../pages/finance/FinanceDashboard';
 import FinancePayments from '../pages/finance/FinancePayments';
+import PPDComplementsPage from '../pages/finance/PPDComplementsPage';
+import InvoiceManagementPage from '../pages/finance/InvoiceManagementPage';
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import UserManagementPage from '../pages/admin/UserManagementPage';
+import DocumentManagementPage from '../pages/admin/DocumentManagementPage';
+import LoginPage from '../pages/auth/LoginPage';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: 'contact',
         element: <Contact />,
+      },
+      {
+        path: 'login',
+        element: <LoginPage />,
       },
       {
         path: 'providers',
@@ -51,12 +60,12 @@ const router = createBrowserRouter([
             element: <PurchaseDashboard />,
           },
           {
-            path: 'quotations',
-            element: <QuotationsPage />,
-          },
-          {
             path: 'new-request',
             element: <NewRequestPage />,
+          },
+          {
+            path: 'quotations',
+            element: <QuotationsPage />,
           },
           {
             path: 'create-order',
@@ -75,6 +84,14 @@ const router = createBrowserRouter([
             path: 'payments',
             element: <FinancePayments />,
           },
+          {
+            path: 'invoices',
+            element: <InvoiceManagementPage />,
+          },
+          {
+            path: 'ppd-complements',
+            element: <PPDComplementsPage />,
+          },
         ],
       },
       {
@@ -83,6 +100,14 @@ const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <AdminDashboard />,
+          },
+          {
+            path: 'users',
+            element: <UserManagementPage />,
+          },
+          {
+            path: 'documents',
+            element: <DocumentManagementPage />,
           },
         ],
       },

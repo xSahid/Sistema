@@ -70,18 +70,18 @@ const AdminDashboard: React.FC = () => {
               <p style={{ color: 'white', marginBottom: '1rem' }}>
                 Crea, edita y gestiona usuarios del sistema
               </p>
-              <button className="btn btn-primary">Gestionar Usuarios</button>
+              <a href="/admin/users" className="btn btn-primary">Gestionar Usuarios</a>
             </div>
             
             <div className="feature-section">
               <h3 className="feature-section-title">
-                <span className="feature-section-icon purple">🔐</span>
-                Roles y Permisos
+                <span className="feature-section-icon purple">📁</span>
+                Gestión de Documentos
               </h3>
               <p style={{ color: 'white', marginBottom: '1rem' }}>
-                Configura roles y permisos de acceso
+                Carga y gestiona documentos de proveedores
               </p>
-              <button className="btn btn-primary">Configurar Roles</button>
+              <a href="/admin/documents" className="btn btn-primary">Gestionar Documentos</a>
             </div>
             
             <div className="feature-section">

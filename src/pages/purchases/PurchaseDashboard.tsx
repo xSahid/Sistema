@@ -25,14 +25,6 @@ const PurchaseDashboard: React.FC = () => {
     }
   }, [isLoading]);
 
-  // Verificar que las imágenes se importen correctamente
-  console.log('Imágenes importadas:', {
-    ResumenGeneral,
-    Cotizacion,
-    Compras,
-    Administracion
-  });
-
   if (isLoading) {
     return (
       <div className="container">

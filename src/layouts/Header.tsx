@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onSidebarToggle: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
   const { user, logout, isDarkMode, toggleDarkMode } = useAppContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -17,6 +21,15 @@ const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="header-content">
+        {/* Sidebar toggle button */}
+        <button 
+          className="sidebar-toggle-btn"
+          onClick={onSidebarToggle}
+          aria-label="Abrir navegación"
+        >
+          <span className="sidebar-toggle-icon">☰</span>
+        </button>
+
         <Link to="/" className="logo">
           SIP - Sistema Integral de Proveedores
         </Link>
@@ -30,37 +43,18 @@ const Header: React.FC = () => {
           <span className={`hamburger ${isMenuOpen ? 'open' : ''}`}></span>
         </button>
         
-        {/* Desktop navigation */}
+        {/* Desktop navigation - Simplified */}
         <nav className="nav desktop-nav">
-          <Link to="/" className="nav-link" onClick={closeMenu}>
-            Inicio
-          </Link>
-          <Link to="/about" className="nav-link" onClick={closeMenu}>
-            Acerca de
-          </Link>
-          <Link to="/contact" className="nav-link" onClick={closeMenu}>
-            Contacto
-          </Link>
-          
-          {user && (
-            <>
-              {user.role === 'provider' && (
-                <Link to="/providers/payments" className="nav-link" onClick={closeMenu}>
-                  Pagos
-                </Link>
-              )}
-              <button 
-                onClick={() => { logout(); closeMenu(); }}
-                className="btn-register"
-              >
-                Cerrar Sesión
-              </button>
-            </>
-          )}
-          
-          {!user && (
-            <Link to="/providers/register" className="btn-register" onClick={closeMenu}>
-              Registrarse como Proveedor
+          {user ? (
+            <button 
+              onClick={() => { logout(); closeMenu(); }}
+              className="btn-register"
+            >
+              Cerrar Sesión
+            </button>
+          ) : (
+            <Link to="/login" className="btn-register" onClick={closeMenu}>
+              Iniciar Sesión
             </Link>
           )}
           
@@ -88,37 +82,18 @@ const Header: React.FC = () => {
           </button>
         </nav>
         
-        {/* Mobile navigation */}
+        {/* Mobile navigation - Simplified */}
         <nav className={`nav mobile-nav ${isMenuOpen ? 'open' : ''}`}>
-          <Link to="/" className="nav-link" onClick={closeMenu}>
-            Inicio
-          </Link>
-          <Link to="/about" className="nav-link" onClick={closeMenu}>
-            Acerca de
-          </Link>
-          <Link to="/contact" className="nav-link" onClick={closeMenu}>
-            Contacto
-          </Link>
-          
-          {user && (
-            <>
-              {user.role === 'provider' && (
-                <Link to="/providers/payments" className="nav-link" onClick={closeMenu}>
-                  Pagos
-                </Link>
-              )}
-              <button 
-                onClick={() => { logout(); closeMenu(); }}
-                className="btn-register"
-              >
-                Cerrar Sesión
-              </button>
-            </>
-          )}
-          
-          {!user && (
-            <Link to="/providers/register" className="btn-register" onClick={closeMenu}>
-              Registrarse como Proveedor
+          {user ? (
+            <button 
+              onClick={() => { logout(); closeMenu(); }}
+              className="btn-register"
+            >
+              Cerrar Sesión
+            </button>
+          ) : (
+            <Link to="/login" className="btn-register" onClick={closeMenu}>
+              Iniciar Sesión
             </Link>
           )}
           
