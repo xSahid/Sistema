@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   return (
@@ -14,9 +15,9 @@ const Footer: React.FC = () => {
           <div className="footer-section">
             <h3>Módulos</h3>
             <ul>
-              <li><a href="/providers/register">Registro de Proveedores</a></li>
-              <li><a href="/purchases/quotations">Cotizaciones</a></li>
-              <li><a href="/finance/payments">Pagos</a></li>
+              <li><Link to="/providers/register">Registro de Proveedores</Link></li>
+              <li><Link to="/purchases/quotations">Cotizaciones</Link></li>
+              <li><Link to="/finance/payments">Pagos</Link></li>
             </ul>
           </div>
           <div className="footer-section">

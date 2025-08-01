@@ -2,19 +2,27 @@
 :root {
   --bg-primary: #f8fafc;
   --bg-secondary: #e2e8f0;
-  --text-primary: #1e293b;
-  --text-secondary: #64748b;
+  --text-primary: #000000;
+  --text-secondary: #1a1a1a;
   --card-bg: white;
   --card-border: #e2e8f0;
   --header-bg: rgba(255, 255, 255, 0.95);
   --header-border: #e2e8f0;
-  --nav-link-color: #475569;
-  --nav-link-hover: #1e293b;
+  --nav-link-color: #000000;
+  --nav-link-hover: #000000;
   --nav-link-bg: #f1f5f9;
   --btn-primary-bg: linear-gradient(135deg, #1e293b, #334155);
   --btn-secondary-bg: linear-gradient(135deg, #64748b, #475569);
   --footer-bg: white;
   --footer-border: #e2e8f0;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 [data-theme="dark"] {
@@ -33,6 +41,14 @@
   --btn-secondary-bg: linear-gradient(135deg, #64748b, #475569);
   --footer-bg: #1e293b;
   --footer-border: #334155;
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --info-color: #3b82f6;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
 }
 
 /* Reset CSS */
@@ -1507,7 +1523,8 @@ body {
 }
 
 .form-field input,
-.form-field select {
+.form-field select,
+.form-field textarea {
   padding: 1rem;
   border: 2px solid var(--card-border);
   border-radius: 0.75rem;
@@ -1519,12 +1536,14 @@ body {
 }
 
 .form-field input:focus,
-.form-field select:focus {
+.form-field select:focus,
+.form-field textarea:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.form-field input::placeholder {
+.form-field input::placeholder,
+.form-field textarea::placeholder {
   color: var(--text-secondary);
 }
 
@@ -1765,6 +1784,48 @@ body {
   overflow: visible;
 }
 
+.password-input-container .password-toggle-btn {
+  position: absolute;
+  right: 0.5rem;
+  top: 40%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  z-index: 10;
+  border-radius: 0.25rem;
+  transition: color 0.2s ease;
+  /* Prevent any movement or scaling */
+  transform: translateY(-50%) !important;
+  width: 2rem;
+  height: 2rem;
+  min-width: 2rem;
+  min-height: 2rem;
+}
+
+.password-input-container .password-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+  /* Prevent transform changes on hover */
+  transform: translateY(-50%) !important;
+}
+
+.password-input-container .password-toggle-btn:active {
+  /* Prevent any movement on click */
+  transform: translateY(-50%) !important;
+}
+
+[data-theme="dark"] .password-input-container .password-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  /* Prevent transform changes on hover */
+  transform: translateY(-50%) !important;
+}
+
 /* Prevent any duplicate icons */
 .password-input-container > svg {
   display: none !important;
@@ -1800,6 +1861,9 @@ body {
   left: auto !important;
   width: 18px !important;
   height: 18px !important;
+  /* Prevent any transitions that might cause movement */
+  transition: none !important;
+  transform: none !important;
 }
 
 .password-input-container:focus-within {
@@ -1826,66 +1890,7 @@ body {
   color: var(--text-secondary);
 }
 
-.password-toggle-btn {
-  position: relative;
-  background: var(--bg-secondary);
-  border: none;
-  cursor: pointer;
-  padding: 0.75rem;
-  margin: 0.25rem;
-  border-radius: 0.5rem;
-  color: var(--text-secondary);
-  transition: all 0.3s ease;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.5rem;
-  height: 2.5rem;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-.password-toggle-btn:hover {
-  color: var(--text-primary);
-  background: var(--card-bg);
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.password-toggle-btn:active {
-  transform: scale(0.95);
-}
-
-.password-toggle-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-}
-
-.password-toggle-btn svg {
-  transition: transform 0.2s ease;
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-}
-
-.password-toggle-btn:hover svg {
-  transform: scale(1.1);
-}
-
-.password-toggle-btn:not(:hover) svg {
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-
-/* Dark mode adjustments for password toggle */
-[data-theme="dark"] .password-toggle-btn {
-  background: #374151;
-}
-
-[data-theme="dark"] .password-toggle-btn:hover {
-  background: #4b5563;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
+/* Remove conflicting password-toggle-btn rules - only use the ones inside password-input-container */
 
 /* Ensure password toggle button is always visible */
 .password-input-container .password-toggle-btn {
@@ -2200,4 +2205,1004 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+}
+
+/* ===== ESTILOS PARA PÁGINAS DE GESTIÓN ===== */
+
+/* Contenedor principal de páginas de gestión */
+.management-page {
+  background: var(--card-bg);
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.management-page::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--info-color), var(--success-color), var(--warning-color));
+  z-index: 1;
+}
+
+/* Mejoras para las cards de cotizaciones */
+.quote-card {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 1.25rem;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.quote-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--info-color), var(--success-color));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.quote-card:hover::before {
+  opacity: 1;
+}
+
+.quote-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Mejoras para los formularios */
+.registration-form {
+  background: var(--card-bg);
+  border-radius: 14px;
+  padding: 1.5rem;
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+}
+
+.registration-form:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Mejoras para las tablas */
+.enhanced-table {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+}
+
+.enhanced-table:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+.enhanced-table tbody tr {
+  transition: all 0.3s ease;
+}
+
+.enhanced-table tbody tr:hover {
+  background: var(--bg-secondary);
+  transform: scale(1.01);
+}
+
+/* Mejoras para los modales */
+.enhanced-modal {
+  border-radius: 20px;
+  box-shadow: var(--shadow-xl);
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.enhanced-modal-overlay {
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease;
+}
+
+.management-page-header {
+  background: linear-gradient(135deg, var(--btn-primary-bg));
+  color: white;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.management-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  opacity: 0.3;
+}
+
+.management-page-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.management-page-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
+}
+
+/* Navegación por pestañas */
+.tab-navigation {
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--card-border);
+  padding: 0 2rem;
+}
+
+.tab-list {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tab-item {
+  position: relative;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 0.875rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-button:hover {
+  color: var(--text-primary);
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.tab-button.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+[data-theme="dark"] .tab-button:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .tab-button.active {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Contenido de las pestañas */
+.tab-content {
+  padding: 1.5rem;
+  background: var(--card-bg);
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* Formularios mejorados */
+.enhanced-form {
+  background: var(--card-bg);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.form-section {
+  margin-bottom: 1.5rem;
+}
+
+.form-section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--card-border);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-field-enhanced {
+  position: relative;
+}
+
+.form-field-enhanced label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-field-enhanced input,
+.form-field-enhanced select,
+.form-field-enhanced textarea {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid var(--card-border);
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  background: var(--card-bg);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+.form-field-enhanced input:focus,
+.form-field-enhanced select:focus,
+.form-field-enhanced textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-field-enhanced input::placeholder,
+.form-field-enhanced textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+.form-field-enhanced textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Botones mejorados */
+.btn-enhanced {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  gap: 0.4rem;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-enhanced:hover::before {
+  left: 100%;
+}
+
+.btn-enhanced:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-enhanced svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-enhanced:hover svg {
+  transform: scale(1.1);
+}
+
+.btn-enhanced-primary {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.btn-enhanced-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.4);
+}
+
+.btn-enhanced-secondary {
+  background: var(--card-bg);
+  color: var(--text-primary);
+  border: 2px solid var(--card-border);
+}
+
+.btn-enhanced-secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--text-secondary);
+}
+
+.btn-enhanced-danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.btn-enhanced-danger:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+}
+
+.btn-enhanced-success {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.btn-enhanced-success:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+}
+
+/* Iconos y elementos visuales */
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.icon-sm {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.icon-lg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.icon-xl {
+  width: 2rem;
+  height: 2rem;
+}
+
+.feature-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0.5rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--info-color), var(--success-color));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+}
+
+.feature-icon:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Tablas mejoradas */
+.enhanced-table {
+  width: 100%;
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--card-border);
+  transition: all 0.3s ease;
+}
+
+.enhanced-table:hover {
+  box-shadow: var(--shadow-xl);
+}
+
+.enhanced-table thead {
+  background: linear-gradient(135deg, var(--bg-secondary), var(--card-border));
+}
+
+.enhanced-table th {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.enhanced-table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--card-border);
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.enhanced-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .enhanced-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Estilos específicos para textos dentro de tablas */
+.enhanced-table .hero-title {
+  font-size: 0.85rem !important;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.enhanced-table .hero-subtitle {
+  font-size: 0.75rem !important;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.2;
+  opacity: 0.8;
+}
+
+/* Botones dentro de tablas */
+.enhanced-table .btn-enhanced {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.7rem;
+  gap: 0.3rem;
+}
+
+.enhanced-table .btn-enhanced svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+/* Contenedor de botones en tablas */
+.enhanced-table .space-x-2 {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.enhanced-table td:last-child {
+  min-width: 200px;
+  white-space: nowrap;
+}
+
+/* Estados y badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.status-badge-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge-approved {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-badge-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-badge-paid {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+[data-theme="dark"] .status-badge-pending {
+  background: #451a03;
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .status-badge-approved {
+  background: #064e3b;
+  color: #34d399;
+}
+
+[data-theme="dark"] .status-badge-rejected {
+  background: #450a0a;
+  color: #f87171;
+}
+
+[data-theme="dark"] .status-badge-paid {
+  background: #1e3a8a;
+  color: #60a5fa;
+}
+
+/* Cards de cotizaciones */
+.quote-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.quote-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.quote-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.quote-provider {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.quote-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.quote-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.quote-detail-item {
+  background: var(--bg-secondary);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  text-align: center;
+}
+
+.quote-detail-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.quote-detail-value {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.quote-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Modal mejorado */
+.enhanced-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.enhanced-modal {
+  background: var(--card-bg);
+  border-radius: 0.875rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  max-width: 550px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--card-border);
+}
+
+.enhanced-modal-header {
+  padding: 1.25rem;
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.enhanced-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.enhanced-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: all 0.3s ease;
+}
+
+.enhanced-modal-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+.enhanced-modal-body {
+  padding: 1.25rem;
+}
+
+.enhanced-modal-footer {
+  padding: 1.25rem;
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .management-page-header {
+    padding: 1.5rem;
+  }
+  
+  .management-page-title {
+    font-size: 2rem;
+  }
+  
+  .tab-navigation {
+    padding: 0 1rem;
+  }
+  
+  .tab-button {
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .tab-content {
+    padding: 1rem;
+  }
+  
+  .enhanced-form {
+    padding: 1rem;
+  }
+  
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .quote-header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .quote-actions {
+    justify-content: center;
+  }
+  
+  .enhanced-modal {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .management-page-title {
+    font-size: 1.75rem;
+  }
+  
+  .tab-list {
+    flex-direction: column;
+  }
+  
+  .tab-button {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+  
+  .tab-button.active {
+    border-left-color: #3b82f6;
+    border-bottom-color: transparent;
+  }
+  
+  .quote-actions {
+    flex-direction: column;
+  }
+  
+  .btn-enhanced {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ===== CORRECCIONES PARA VISIBILIDAD DE TEXTO EN MODO CLARO ===== */
+
+/* Asegurar que todos los textos sean visibles en modo claro */
+.form-field-enhanced label,
+.form-section-title,
+.quote-provider,
+.quote-detail-label,
+.quote-detail-value,
+.enhanced-modal-title {
+  color: var(--text-primary) !important;
+}
+
+/* Asegurar que los textos secundarios sean visibles */
+.form-field-enhanced input::placeholder,
+.form-field-enhanced textarea::placeholder,
+.quote-detail-label,
+.enhanced-modal-body p,
+.enhanced-modal-body h3 {
+  color: var(--text-secondary) !important;
+}
+
+/* Asegurar que los inputs y selects tengan texto visible */
+.form-field-enhanced input,
+.form-field-enhanced select,
+.form-field-enhanced textarea {
+  color: var(--text-primary) !important;
+  background: var(--card-bg) !important;
+}
+
+/* Asegurar que las opciones de select sean visibles */
+.form-field-enhanced select option {
+  color: var(--text-primary) !important;
+  background: var(--card-bg) !important;
+}
+
+/* Asegurar que los textos en las tablas sean visibles */
+.enhanced-table th,
+.enhanced-table td {
+  color: var(--text-primary) !important;
+}
+
+/* Asegurar que los textos en las tarjetas de cotizaciones sean visibles */
+.quote-card p,
+.quote-card h3 {
+  color: var(--text-primary) !important;
+}
+
+/* Asegurar que los textos en el modal sean visibles */
+.enhanced-modal-body h3,
+.enhanced-modal-body p {
+  color: var(--text-primary) !important;
+}
+
+/* Asegurar que los textos en los badges de estado sean visibles */
+.status-badge {
+  color: inherit !important;
+}
+
+/* Asegurar que los textos en los botones sean visibles */
+.btn-enhanced {
+  color: inherit !important;
+}
+
+/* Asegurar que los textos en las pestañas sean visibles */
+.tab-button {
+  color: var(--text-secondary) !important;
+}
+
+.tab-button.active {
+  color: #3b82f6 !important;
+}
+
+.tab-button:hover {
+  color: var(--text-primary) !important;
+}
+
+/* ===== ESTILOS ESPECÍFICOS PARA COTIZACIONES - TAMAÑO CORDIAL ===== */
+
+/* Ajustes de tamaño cordial para las tarjetas de cotizaciones */
+.quote-card {
+  padding: 1.25rem; /* Reducido de 1.5rem */
+  border-radius: 12px; /* Reducido de 16px */
+}
+
+/* ===== ESTILOS PARA CHECKBOXES Y FORMULARIOS ===== */
+.form-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-checkbox:checked {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.form-checkbox:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Estilos para formularios de orden */
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* Estilos para textarea */
+.form-input[rows] {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.quote-card .hero-title {
+  font-size: 1rem !important; /* Tamaño cordial para títulos */
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.quote-card .hero-subtitle {
+  font-size: 0.875rem !important; /* Tamaño cordial para subtítulos */
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.4;
+  opacity: 0.85;
+}
+
+.quote-card .quote-amount .hero-title {
+  font-size: 1.25rem !important; /* Tamaño cordial para montos */
+  font-weight: 700;
+}
+
+.quote-card .btn-enhanced {
+  padding: 0.5rem 1rem; /* Tamaño cordial para botones */
+  font-size: 0.8rem;
+  gap: 0.4rem;
+}
+
+.quote-card .btn-enhanced svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.quote-card .status-badge {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+.quote-card .quote-detail-item {
+  margin-bottom: 0.75rem; /* Reducido de 1rem */
+}
+
+.quote-card .quote-detail-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+/* Estilos para el formulario de cotizaciones */
+.registration-form .form-field {
+  margin-bottom: 1.25rem; /* Reducido de 1.5rem */
+}
+
+.registration-form .form-field label {
+  font-size: 0.875rem; /* Tamaño cordial para labels */
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.registration-form .form-field input,
+.registration-form .form-field select,
+.registration-form .form-field textarea {
+  padding: 0.625rem 0.875rem; /* Reducido de 0.75rem 1rem */
+  font-size: 0.875rem; /* Tamaño cordial para inputs */
+  border-radius: 8px; /* Reducido de 10px */
+}
+
+.registration-form .btn-enhanced {
+  padding: 0.625rem 1.25rem; /* Tamaño cordial para botones del formulario */
+  font-size: 0.875rem;
+  gap: 0.5rem;
+}
+
+.registration-form .btn-enhanced svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Estilos para el modal de cotizaciones */
+.enhanced-modal {
+  max-width: 500px; /* Reducido de 600px */
+  padding: 1.5rem; /* Reducido de 2rem */
+}
+
+.enhanced-modal-title {
+  font-size: 1.125rem; /* Tamaño cordial para título del modal */
+  font-weight: 600;
+}
+
+.enhanced-modal-body .hero-title {
+  font-size: 0.95rem !important; /* Tamaño cordial para títulos en modal */
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.enhanced-modal-body .hero-subtitle {
+  font-size: 0.85rem !important; /* Tamaño cordial para subtítulos en modal */
+  font-weight: 400;
+  margin-bottom: 1rem;
 }

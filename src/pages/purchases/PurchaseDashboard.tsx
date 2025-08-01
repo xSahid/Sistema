@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import ResumenGeneral from '../../assets/Img/ResumenGeneral.png';
 import Cotizacion from '../../assets/Img/Cotizacion.png';
 import Compras from '../../assets/Img/compras.png';
@@ -191,7 +192,9 @@ const PurchaseDashboard: React.FC = () => {
               <p style={{ color: 'white', marginBottom: '1rem' }}>
                 Genera una nueva solicitud de cotización
               </p>
-              <button className="btn btn-primary">Nueva Solicitud</button>
+              <Link to="/purchases/new-request" className="btn btn-primary">
+                Nueva Solicitud
+              </Link>
             </div>
             
             <div className="feature-section">
@@ -202,7 +205,9 @@ const PurchaseDashboard: React.FC = () => {
               <p style={{ color: 'white', marginBottom: '1rem' }}>
                 Compara y evalúa cotizaciones recibidas
               </p>
-              <button className="btn btn-primary">Ver Cotizaciones</button>
+              <Link to="/purchases/quotations" className="btn btn-primary">
+                Ver Cotizaciones
+              </Link>
             </div>
             
             <div className="feature-section">
@@ -213,7 +218,9 @@ const PurchaseDashboard: React.FC = () => {
               <p style={{ color: 'white', marginBottom: '1rem' }}>
                 Crea órdenes de compra para cotizaciones aprobadas
               </p>
-              <button className="btn btn-primary">Crear Orden</button>
+              <Link to="/purchases/create-order" className="btn btn-primary">
+                Crear Orden
+              </Link>
             </div>
           </div>
         </div>

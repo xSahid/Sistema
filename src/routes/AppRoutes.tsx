@@ -6,7 +6,11 @@ import Contact from '../pages/Contact';
 import ProviderRegistration from '../pages/providers/ProviderRegistration';
 import ProviderDashboard from '../pages/providers/ProviderDashboard';
 import PurchaseDashboard from '../pages/purchases/PurchaseDashboard';
+import QuotationsPage from '../pages/purchases/QuotationsPage';
+import NewRequestPage from '../pages/purchases/NewRequestPage';
+import CreateOrderPage from '../pages/purchases/CreateOrderPage';
 import FinanceDashboard from '../pages/finance/FinanceDashboard';
+import FinancePayments from '../pages/finance/FinancePayments';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 
 const router = createBrowserRouter([
@@ -46,6 +50,18 @@ const router = createBrowserRouter([
             path: 'dashboard',
             element: <PurchaseDashboard />,
           },
+          {
+            path: 'quotations',
+            element: <QuotationsPage />,
+          },
+          {
+            path: 'new-request',
+            element: <NewRequestPage />,
+          },
+          {
+            path: 'create-order',
+            element: <CreateOrderPage />,
+          },
         ],
       },
       {
@@ -54,6 +70,10 @@ const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <FinanceDashboard />,
+          },
+          {
+            path: 'payments',
+            element: <FinancePayments />,
           },
         ],
       },
