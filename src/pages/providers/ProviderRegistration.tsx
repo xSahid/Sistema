@@ -1,694 +1,996 @@
-import React, { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
-import CustomAlert from '../../components/CustomAlert';
+import React, { useState } from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  TextField,
+  Button,
+  Stepper,
+  Step,
+  StepLabel,
+  Alert,
+  Snackbar,
+  Container,
+  Avatar,
+  LinearProgress,
+  Chip,
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { 
+  ArrowBack, 
+  Business, 
+  Assignment, 
+  Description, 
+  ContactMail, 
+  CheckCircle,
+  ArrowForward,
+  Check,
+} from '@mui/icons-material';
+import { useAppContext } from '../../context/AppContext';
 
-interface ProviderFormData {
-  rfc: string;
-  businessName: string;
-  address: string;
-  contactName: string;
-  contactEmail: string;
-  contactPhone: string;
-  taxStatus: string;
-  constitutiveAct: File | null;
-  satOpinion: File | null;
-  legalRepresentative: File | null;
-  taxCertificate: File | null;
-}
-
-interface FormErrors {
-  rfc?: string;
-  businessName?: string;
-  address?: string;
-  contactName?: string;
-  contactEmail?: string;
-  contactPhone?: string;
-  taxStatus?: string;
-  constitutiveAct?: string;
-  satOpinion?: string;
-  legalRepresentative?: string;
-  taxCertificate?: string;
-}
+const steps = ['Información Fiscal', 'Datos de Contacto', 'Documentos Requeridos', 'Revisión Final'];
 
 const ProviderRegistration: React.FC = () => {
-  const [formData, setFormData] = useState<ProviderFormData>({
-    rfc: '',
-    businessName: '',
+  const navigate = useNavigate();
+  const { isDarkMode } = useAppContext();
+  // Force dark mode update - v2
+  const [activeStep, setActiveStep] = useState(0);
+  const [formData, setFormData] = useState({
+    companyName: '',
+    taxId: '',
+    businessType: '',
     address: '',
-    contactName: '',
-    contactEmail: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    email: '',
+    website: '',
+    contactPerson: '',
     contactPhone: '',
-    taxStatus: '',
-    constitutiveAct: null,
-    satOpinion: null,
-    legalRepresentative: null,
-    taxCertificate: null,
+    contactEmail: '',
+    bankAccount: '',
+    bankName: '',
+    documents: [] as File[],
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [alert, setAlert] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    type: 'success' | 'error' | 'warning' | 'info';
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    type: 'info'
-  });
-
-  // Simular carga inicial
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Validaciones específicas
-  const validateRFC = (rfc: string): string | undefined => {
-    if (!rfc.trim()) return 'El RFC es requerido';
-    if (rfc.length < 12 || rfc.length > 13) return 'El RFC debe tener 12 o 13 caracteres';
-    if (!/^[A-Z&Ñ]{3,4}[0-9]{6}[A-Z0-9]{3}$/.test(rfc)) {
-      return 'El RFC debe tener un formato válido';
-    }
-    return undefined;
-  };
-
-  const validateBusinessName = (name: string): string | undefined => {
-    if (!name.trim()) return 'La razón social es requerida';
-    if (name.length < 3) return 'La razón social debe tener al menos 3 caracteres';
-    if (name.length > 200) return 'La razón social es demasiado larga';
-    return undefined;
-  };
-
-  const validateEmail = (email: string): string | undefined => {
-    if (!email.trim()) return 'El email es requerido';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return 'El email debe tener un formato válido';
-    }
-    return undefined;
-  };
-
-  const validatePhone = (phone: string): string | undefined => {
-    if (!phone.trim()) return 'El teléfono es requerido';
-    if (!/^[0-9]{10}$/.test(phone.replace(/\s/g, ''))) {
-      return 'El teléfono debe tener 10 dígitos';
-    }
-    return undefined;
-  };
-
-  const validateFile = (file: File | null, fieldName: string): string | undefined => {
-    if (!file) return `El documento ${fieldName} es requerido`;
-    if (file.size > 10 * 1024 * 1024) return 'El archivo no puede ser mayor a 10MB';
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-      return 'Solo se permiten archivos PDF, JPEG o PNG';
-    }
-    return undefined;
-  };
-
-  const validateField = (name: string, value: string | File | null): string | undefined => {
-    switch (name) {
-      case 'rfc':
-        return validateRFC(value as string);
-      case 'businessName':
-        return validateBusinessName(value as string);
-      case 'address':
-        if (!value || !(value as string).trim()) return 'El domicilio es requerido';
-        if ((value as string).length < 10) return 'El domicilio debe tener al menos 10 caracteres';
-        return undefined;
-      case 'contactName':
-        if (!value || !(value as string).trim()) return 'El nombre de contacto es requerido';
-        if ((value as string).length < 2) return 'El nombre debe tener al menos 2 caracteres';
-        return undefined;
-      case 'contactEmail':
-        return validateEmail(value as string);
-      case 'contactPhone':
-        return validatePhone(value as string);
-      case 'taxStatus':
-        if (!value || !(value as string).trim()) return 'La situación fiscal es requerida';
-        return undefined;
-      case 'constitutiveAct':
-        return validateFile(value as File, 'Acta Constitutiva');
-      case 'satOpinion':
-        return validateFile(value as File, 'Opinión SAT');
-      case 'legalRepresentative':
-        return validateFile(value as File, 'Identificación del Representante Legal');
-      case 'taxCertificate':
-        return validateFile(value as File, 'Constancia de Situación Fiscal');
-      default:
-        return undefined;
+  const handleNext = () => {
+    if (validateStep()) {
+      setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    if (touched[name]) {
-      const error = validateField(name, value);
-      setErrors(prev => ({
-        ...prev,
-        [name]: error
-      }));
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    const file = files ? files[0] : null;
-    
-    setFormData(prev => ({
-      ...prev,
-      [name]: file
-    }));
-    
-    if (touched[name]) {
-      const error = validateField(name, file);
-      setErrors(prev => ({
-        ...prev,
-        [name]: error
-      }));
+  const validateStep = () => {
+    const newErrors: Record<string, string> = {};
+
+    switch (activeStep) {
+      case 0:
+        if (!formData.companyName) newErrors.companyName = 'Nombre de empresa es requerido';
+        if (!formData.taxId) newErrors.taxId = 'RFC es requerido';
+        if (!formData.businessType) newErrors.businessType = 'Tipo de negocio es requerido';
+        break;
+      case 1:
+        if (!formData.address) newErrors.address = 'Dirección es requerida';
+        if (!formData.city) newErrors.city = 'Ciudad es requerida';
+        if (!formData.state) newErrors.state = 'Estado es requerido';
+        break;
+      case 2:
+        if (!formData.phone) newErrors.phone = 'Teléfono es requerido';
+        if (!formData.email) newErrors.email = 'Email es requerido';
+        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+          newErrors.email = 'Email inválido';
+        }
+        break;
     }
-  };
-
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    
-    const error = validateField(name, value);
-    setErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
-
-  const handleFileBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    const { name, files } = e.target;
-    const file = files ? files[0] : null;
-    
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    
-    const error = validateField(name, file);
-    setErrors(prev => ({
-      ...prev,
-      [name]: error
-    }));
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-    
-    Object.keys(formData).forEach(key => {
-      const error = validateField(key, formData[key as keyof ProviderFormData]);
-      if (error) {
-        newErrors[key as keyof FormErrors] = error;
-      }
-    });
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (validateForm()) {
-      setIsSubmitting(true);
-      
-      try {
-        // Simular envío al backend
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        console.log('Provider Data:', formData);
-        
-        setAlert({
-          isOpen: true,
-          title: 'Solicitud Enviada',
-          message: 'Tu solicitud de registro ha sido enviada exitosamente. El área de Compras/Administración la revisará y te notificará el resultado en los próximos días.',
-          type: 'success'
-        });
-        
-        // Limpiar formulario después del éxito
-        handleClear();
-        
-      } catch (error) {
-        console.error('Error al enviar el formulario:', error);
-        setAlert({
-          isOpen: true,
-          title: 'Error de Envío',
-          message: 'Error al enviar la solicitud. Por favor, intenta nuevamente.',
-          type: 'error'
-        });
-      } finally {
-        setIsSubmitting(false);
-      }
-    } else {
-      setAlert({
-        isOpen: true,
-        title: 'Errores de Validación',
-        message: 'Por favor, corrige los errores en el formulario antes de enviar.',
-        type: 'warning'
-      });
+  const handleSubmit = () => {
+    if (validateStep()) {
+      // Simular envío de datos
+      setTimeout(() => {
+        setShowSuccess(true);
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
+      }, 1000);
     }
   };
 
-  const handleClear = () => {
-    setFormData({
-      rfc: '',
-      businessName: '',
-      address: '',
-      contactName: '',
-      contactEmail: '',
-      contactPhone: '',
-      taxStatus: '',
-      constitutiveAct: null,
-      satOpinion: null,
-      legalRepresentative: null,
-      taxCertificate: null,
-    });
-    setErrors({});
-    setTouched({});
-  };
+  const renderStepContent = (step: number) => {
+    switch (step) {
+      case 0:
+        return (
+          <Box sx={{ p: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 4,
+              p: 3,
+              backgroundColor: isDarkMode ? '#1e293b' : '#f8f9fa',
+              borderRadius: 2,
+              border: `1px solid ${isDarkMode ? '#334155' : '#e9ecef'}`,
+            }}>
+              <Avatar sx={{
+                bgcolor: isDarkMode ? '#60a5fa' : '#6366f1',
+                color: '#ffffff',
+                mr: 3,
+                width: 56,
+                height: 56,
+                boxShadow: isDarkMode 
+                  ? '0 4px 16px rgba(96, 165, 250, 0.3)' 
+                  : '0 4px 16px rgba(99, 102, 241, 0.3)',
+              }}>
+                <Assignment />
+              </Avatar>
+              <Box>
+                <Typography variant="h5" sx={{ 
+                  color: isDarkMode ? '#f8fafc' : '#1f2937',
+                  fontWeight: 600,
+                  mb: 1,
+                }}>
+                  Información Fiscal
+                </Typography>
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#cbd5e1' : '#6b7280',
+                }}>
+                  Complete los datos fiscales de su empresa
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 4 
+            }}>
+                              <TextField
+                  fullWidth
+                  label="RFC"
+                  value={formData.taxId}
+                  onChange={(e) => handleInputChange('taxId', e.target.value)}
+                  error={!!errors.taxId}
+                  helperText={errors.taxId}
+                  required
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                      color: isDarkMode ? '#f8fafc' : '#1f2937',
+                      borderRadius: 1.5,
+                      '&:hover': {
+                        backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                        borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                      },
+                      '&.Mui-focused': {
+                        backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                        boxShadow: isDarkMode 
+                          ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                          : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                      },
+                    },
+                    '& .MuiInputLabel-root': {
+                      color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                      '&.Mui-focused': {
+                        color: isDarkMode ? '#60a5fa' : '#6366f1',
+                      },
+                    },
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                    },
+                    '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  }}
+                />
+              <TextField
+                fullWidth
+                label="Razón Social"
+                value={formData.companyName}
+                onChange={(e) => handleInputChange('companyName', e.target.value)}
+                error={!!errors.companyName}
+                helperText={errors.companyName}
+                required
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Domicilio Fiscal"
+                value={formData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
+                error={!!errors.address}
+                helperText={errors.address}
+                required
+                variant="outlined"
+                sx={{
+                  gridColumn: { xs: '1', md: '1 / -1' },
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        );
 
-  const closeAlert = () => {
-    setAlert(prev => ({ ...prev, isOpen: false }));
-  };
+      case 1:
+        return (
+          <Box sx={{ p: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 4,
+              p: 3,
+              backgroundColor: isDarkMode ? '#1e293b' : '#f8f9fa',
+              borderRadius: 2,
+              border: `1px solid ${isDarkMode ? '#334155' : '#e9ecef'}`,
+            }}>
+              <Avatar sx={{
+                bgcolor: isDarkMode ? '#60a5fa' : '#6366f1',
+                color: '#ffffff',
+                mr: 3,
+                width: 56,
+                height: 56,
+                boxShadow: isDarkMode 
+                  ? '0 4px 16px rgba(96, 165, 250, 0.3)' 
+                  : '0 4px 16px rgba(99, 102, 241, 0.3)',
+              }}>
+                <ContactMail />
+              </Avatar>
+              <Box>
+                <Typography variant="h5" sx={{ 
+                  color: isDarkMode ? '#f8fafc' : '#1f2937',
+                  fontWeight: 600,
+                  mb: 1,
+                }}>
+                  Datos de Contacto
+                </Typography>
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#cbd5e1' : '#6b7280',
+                }}>
+                  Información de contacto de la empresa
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 4 
+            }}>
+              <TextField
+                fullWidth
+                label="Teléfono de la Empresa"
+                value={formData.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value)}
+                error={!!errors.phone}
+                helperText={errors.phone}
+                required
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Email de la Empresa"
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                error={!!errors.email}
+                helperText={errors.email}
+                required
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Persona de Contacto"
+                value={formData.contactPerson}
+                onChange={(e) => handleInputChange('contactPerson', e.target.value)}
+                variant="outlined"
+                sx={{
+                  gridColumn: { xs: '1', md: '1 / -1' },
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        );
 
-  // Componente Skeleton para el formulario
-  const FormSkeleton = () => (
-    <div className="skeleton-form-container">
-      <div className="skeleton-form-row">
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-      </div>
-      
-      <div className="skeleton-form-row">
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-      </div>
-      
-      <div className="skeleton-form-field full-width">
-        <div className="skeleton-label skeleton"></div>
-        <div className="skeleton-textarea skeleton"></div>
-      </div>
-      
-      <div className="skeleton-form-row">
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-      </div>
-      
-      <div className="skeleton-form-field full-width">
-        <div className="skeleton-label skeleton"></div>
-        <div className="skeleton-input skeleton"></div>
-      </div>
-      
-      <div className="skeleton-form-row">
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-      </div>
-      
-      <div className="skeleton-form-row">
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-        <div className="skeleton-form-field">
-          <div className="skeleton-label skeleton"></div>
-          <div className="skeleton-input skeleton"></div>
-        </div>
-      </div>
-      
-      <div className="skeleton-buttons">
-        <div className="skeleton-button skeleton"></div>
-        <div className="skeleton-button primary skeleton"></div>
-      </div>
-    </div>
-  );
+      case 2:
+        return (
+          <Box sx={{ p: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 4,
+              p: 3,
+              backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa',
+              borderRadius: 2,
+              border: `1px solid ${isDarkMode ? '#333' : '#e9ecef'}`,
+            }}>
+              <Avatar sx={{
+                bgcolor: isDarkMode ? '#6366f1' : '#6366f1',
+                color: '#ffffff',
+                mr: 3,
+                width: 56,
+                height: 56,
+              }}>
+                <Description />
+              </Avatar>
+              <Box>
+                <Typography variant="h5" sx={{ 
+                  color: isDarkMode ? '#ffffff' : '#1f2937',
+                  fontWeight: 600,
+                  mb: 1,
+                }}>
+                  Documentos Requeridos
+                </Typography>
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                }}>
+                  Suba los documentos necesarios para completar el registro
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 4 
+            }}>
+              <TextField
+                fullWidth
+                label="Acta Constitutiva"
+                type="file"
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+              <TextField
+                fullWidth
+                label="RFC"
+                type="file"
+                variant="outlined"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+                    color: isDarkMode ? '#f8fafc' : '#1f2937',
+                    borderRadius: 1.5,
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                      borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                    '&.Mui-focused': {
+                      backgroundColor: isDarkMode ? '#334155' : '#ffffff',
+                      boxShadow: isDarkMode 
+                        ? '0 0 0 3px rgba(96, 165, 250, 0.1)' 
+                        : '0 0 0 3px rgba(99, 102, 241, 0.1)',
+                    },
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: isDarkMode ? '#e2e8f0' : '#6b7280',
+                    '&.Mui-focused': {
+                      color: isDarkMode ? '#60a5fa' : '#6366f1',
+                    },
+                  },
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                  },
+                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                  '& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                  },
+                }}
+              />
+            </Box>
+          </Box>
+        );
+
+      case 3:
+        return (
+          <Box sx={{ p: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 4,
+              p: 3,
+              backgroundColor: isDarkMode ? '#1a1a1a' : '#f8f9fa',
+              borderRadius: 2,
+              border: `1px solid ${isDarkMode ? '#333' : '#e9ecef'}`,
+            }}>
+              <Avatar sx={{
+                bgcolor: isDarkMode ? '#10b981' : '#10b981',
+                color: '#ffffff',
+                mr: 3,
+                width: 56,
+                height: 56,
+              }}>
+                <CheckCircle />
+              </Avatar>
+              <Box>
+                <Typography variant="h5" sx={{ 
+                  color: isDarkMode ? '#ffffff' : '#1f2937',
+                  fontWeight: 600,
+                  mb: 1,
+                }}>
+                  Revisión Final
+                </Typography>
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#9ca3af' : '#6b7280',
+                }}>
+                  Revise la información antes de completar el registro
+                </Typography>
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              display: 'grid', 
+              gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+              gap: 4 
+            }}>
+              <Box sx={{
+                p: 3,
+                backgroundColor: isDarkMode ? '#334155' : '#f9fafb',
+                borderRadius: 2,
+                border: `1px solid ${isDarkMode ? '#475569' : '#e5e7eb'}`,
+              }}>
+                <Typography variant="subtitle2" sx={{ 
+                  color: isDarkMode ? '#60a5fa' : '#6366f1',
+                  mb: 2,
+                  fontWeight: 600,
+                }}>
+                  RFC
+                </Typography>
+                <Typography variant="body1" sx={{ 
+                  color: isDarkMode ? '#f8fafc' : '#1f2937',
+                  fontWeight: 500,
+                }}>
+                  {formData.taxId || 'No especificado'}
+                </Typography>
+              </Box>
+              <Box sx={{
+                p: 3,
+                backgroundColor: isDarkMode ? '#1e293b' : '#f9fafb',
+                borderRadius: 2,
+                border: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+              }}>
+                <Typography variant="subtitle2" sx={{ 
+                  color: isDarkMode ? '#60a5fa' : '#6366f1',
+                  mb: 2,
+                  fontWeight: 600,
+                }}>
+                  Razón Social
+                </Typography>
+                <Typography variant="body1" sx={{ 
+                  color: isDarkMode ? '#f8fafc' : '#1f2937',
+                  fontWeight: 500,
+                }}>
+                  {formData.companyName || 'No especificado'}
+                </Typography>
+              </Box>
+              <Box sx={{
+                p: 3,
+                backgroundColor: isDarkMode ? '#1e293b' : '#f9fafb',
+                borderRadius: 2,
+                border: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+              }}>
+                <Typography variant="subtitle2" sx={{ 
+                  color: isDarkMode ? '#60a5fa' : '#6366f1',
+                  mb: 2,
+                  fontWeight: 600,
+                }}>
+                  Email
+                </Typography>
+                <Typography variant="body1" sx={{ 
+                  color: isDarkMode ? '#f8fafc' : '#1f2937',
+                  fontWeight: 500,
+                }}>
+                  {formData.email || 'No especificado'}
+                </Typography>
+              </Box>
+              <Box sx={{
+                p: 3,
+                backgroundColor: isDarkMode ? '#1e293b' : '#f9fafb',
+                borderRadius: 2,
+                border: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+              }}>
+                <Typography variant="subtitle2" sx={{ 
+                  color: isDarkMode ? '#60a5fa' : '#6366f1',
+                  mb: 2,
+                  fontWeight: 600,
+                }}>
+                  Teléfono
+                </Typography>
+                <Typography variant="body1" sx={{ 
+                  color: isDarkMode ? '#f8fafc' : '#1f2937',
+                  fontWeight: 500,
+                }}>
+                  {formData.phone || 'No especificado'}
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="management-page">
-        <div className="management-page-header">
-          <div className="flex items-center justify-center mb-4">
-            <div className="feature-icon">
-              <svg className="icon" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-              </svg>
-            </div>
-          </div>
-          <h1 className="page-main-title">PASO 1 - Alta de Proveedor</h1>
-          <p className="page-main-subtitle">
-            Registra tu empresa como proveedor y carga los documentos necesarios para la validación
-          </p>
-        </div>
-        
-        {isLoading ? (
-          <FormSkeleton />
-        ) : (
-          <div className="registration-form-container">
-            <form onSubmit={handleSubmit} className="registration-form form-entrance-animation">
-              <div className="form-row form-row-entrance">
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                    </svg>
-                    RFC *
-                  </label>
-                  <input
-                    type="text"
-                    name="rfc"
-                    value={formData.rfc}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    required
-                    placeholder="XAXX010101000"
-                    className={errors.rfc && touched.rfc ? 'error' : ''}
-                  />
-                  {errors.rfc && touched.rfc && (
-                    <span className="error-message">{errors.rfc}</span>
-                  )}
-                </div>
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                    </svg>
-                    Razón Social *
-                  </label>
-                  <input
-                    type="text"
-                    name="businessName"
-                    value={formData.businessName}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    required
-                    placeholder="Nombre de la empresa"
-                    className={errors.businessName && touched.businessName ? 'error' : ''}
-                  />
-                  {errors.businessName && touched.businessName && (
-                    <span className="error-message">{errors.businessName}</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-field full-width form-field-entrance">
-                <label>
-                  <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                  </svg>
-                  Domicilio Fiscal *
-                </label>
-                <textarea
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  onBlur={handleBlur}
-                  required
-                  rows={3}
-                  placeholder="Dirección completa de la empresa"
-                  className={errors.address && touched.address ? 'error' : ''}
-                />
-                {errors.address && touched.address && (
-                  <span className="error-message">{errors.address}</span>
-                )}
-              </div>
-              
-              <div className="form-row form-row-entrance">
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
-                    </svg>
-                    Nombre del Contacto *
-                  </label>
-                  <input
-                    type="text"
-                    name="contactName"
-                    value={formData.contactName}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    required
-                    placeholder="Nombre completo"
-                    className={errors.contactName && touched.contactName ? 'error' : ''}
-                  />
-                  {errors.contactName && touched.contactName && (
-                    <span className="error-message">{errors.contactName}</span>
-                  )}
-                </div>
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                    </svg>
-                    Email de Contacto *
-                  </label>
-                  <input
-                    type="email"
-                    name="contactEmail"
-                    value={formData.contactEmail}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    required
-                    placeholder="contacto@empresa.com"
-                    className={errors.contactEmail && touched.contactEmail ? 'error' : ''}
-                  />
-                  {errors.contactEmail && touched.contactEmail && (
-                    <span className="error-message">{errors.contactEmail}</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-row form-row-entrance">
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                    </svg>
-                    Teléfono de Contacto *
-                  </label>
-                  <input
-                    type="tel"
-                    name="contactPhone"
-                    value={formData.contactPhone}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    required
-                    placeholder="5551234567"
-                    className={errors.contactPhone && touched.contactPhone ? 'error' : ''}
-                  />
-                  {errors.contactPhone && touched.contactPhone && (
-                    <span className="error-message">{errors.contactPhone}</span>
-                  )}
-                </div>
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
-                    </svg>
-                    Situación Fiscal *
-                  </label>
-                  <select
-                    name="taxStatus"
-                    value={formData.taxStatus}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    required
-                    className={errors.taxStatus && touched.taxStatus ? 'error' : ''}
-                  >
-                    <option value="">Seleccionar situación fiscal</option>
-                    <option value="active">Activo</option>
-                    <option value="suspended">Suspendido</option>
-                    <option value="cancelled">Cancelado</option>
-                  </select>
-                  {errors.taxStatus && touched.taxStatus && (
-                    <span className="error-message">{errors.taxStatus}</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-row form-row-entrance">
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Acta Constitutiva *
-                  </label>
-                  <input
-                    type="file"
-                    name="constitutiveAct"
-                    onChange={handleFileChange}
-                    onBlur={handleFileBlur}
-                    required
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className={errors.constitutiveAct && touched.constitutiveAct ? 'error' : ''}
-                  />
-                  {errors.constitutiveAct && touched.constitutiveAct && (
-                    <span className="error-message">{errors.constitutiveAct}</span>
-                  )}
-                </div>
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Opinión Positiva SAT *
-                  </label>
-                  <input
-                    type="file"
-                    name="satOpinion"
-                    onChange={handleFileChange}
-                    onBlur={handleFileBlur}
-                    required
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className={errors.satOpinion && touched.satOpinion ? 'error' : ''}
-                  />
-                  {errors.satOpinion && touched.satOpinion && (
-                    <span className="error-message">{errors.satOpinion}</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="form-row form-row-entrance">
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Identificación del Representante Legal *
-                  </label>
-                  <input
-                    type="file"
-                    name="legalRepresentative"
-                    onChange={handleFileChange}
-                    onBlur={handleFileBlur}
-                    required
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className={errors.legalRepresentative && touched.legalRepresentative ? 'error' : ''}
-                  />
-                  {errors.legalRepresentative && touched.legalRepresentative && (
-                    <span className="error-message">{errors.legalRepresentative}</span>
-                  )}
-                </div>
-                <div className="form-field form-field-entrance">
-                  <label>
-                    <svg className="icon-sm inline mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
-                    Constancia de Situación Fiscal *
-                  </label>
-                  <input
-                    type="file"
-                    name="taxCertificate"
-                    onChange={handleFileChange}
-                    onBlur={handleFileBlur}
-                    required
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    className={errors.taxCertificate && touched.taxCertificate ? 'error' : ''}
-                  />
-                  {errors.taxCertificate && touched.taxCertificate && (
-                    <span className="error-message">{errors.taxCertificate}</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="flex justify-end space-x-4 buttons-entrance">
-                <button
-                  type="button"
-                  onClick={handleClear}
-                  className="btn-enhanced btn-enhanced-secondary"
-                  disabled={isSubmitting}
-                >
-                  <svg className="icon-sm" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  Limpiar
-                </button>
-                <button
-                  type="submit"
-                  className={`btn-enhanced btn-enhanced-primary ${isSubmitting ? 'submitting' : ''}`}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <svg className="icon-sm spinning" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                      </svg>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <svg className="icon-sm" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      Enviar Solicitud
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-      </div>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Paper sx={{
+        borderRadius: 3,
+        overflow: 'hidden',
+        boxShadow: isDarkMode 
+          ? '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 10px 20px -5px rgba(0, 0, 0, 0.3)' 
+          : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
+        border: isDarkMode ? '1px solid #1e293b' : '1px solid #e5e7eb',
+        minHeight: '100vh',
+        // Force dark mode styling
+        '& .MuiPaper-root': {
+          backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
+        },
+      }}>
+        {/* Header */}
+        <Box sx={{ 
+          p: 4,
+          background: isDarkMode 
+            ? 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)'
+            : 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)',
+          borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <Button
+              startIcon={<ArrowBack />}
+              onClick={() => navigate('/dashboard')}
+              variant="text"
+              sx={{
+                mr: 3,
+                color: isDarkMode ? '#60a5fa' : '#6366f1',
+                fontWeight: 500,
+                '&:hover': {
+                  backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                },
+              }}
+            >
+              Volver
+            </Button>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Avatar sx={{
+              bgcolor: isDarkMode ? '#60a5fa' : '#6366f1',
+              color: '#ffffff',
+              mr: 3,
+              width: 64,
+              height: 64,
+              boxShadow: isDarkMode 
+                ? '0 4px 20px rgba(96, 165, 250, 0.3)' 
+                : '0 4px 20px rgba(99, 102, 241, 0.3)',
+            }}>
+              <Business />
+            </Avatar>
+            <Box>
+              <Typography variant="h4" sx={{
+                fontWeight: 700,
+                color: isDarkMode ? '#f8fafc' : '#1f2937',
+                mb: 1,
+              }}>
+                Registro de Proveedor
+              </Typography>
+              <Typography variant="body1" sx={{
+                color: isDarkMode ? '#cbd5e1' : '#6b7280',
+                fontWeight: 500,
+              }}>
+                Complete el formulario para registrar su empresa como proveedor
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
 
-      {/* Alert Modal */}
-      {alert.isOpen && (
-        createPortal(
-          <CustomAlert
-            isOpen={alert.isOpen}
-            onClose={closeAlert}
-            title={alert.title}
-            message={alert.message}
-            type={alert.type}
-          />,
-          document.body
-        )
-      )}
-    </div>
+        {/* Progress */}
+        <Box sx={{ p: 4, pb: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            mb: 3 
+          }}>
+            <Typography variant="h6" sx={{
+              color: isDarkMode ? '#f8fafc' : '#1f2937',
+              fontWeight: 600,
+            }}>
+              Progreso
+            </Typography>
+            <Chip 
+              label={`${Math.round((activeStep / (steps.length - 1)) * 100)}%`}
+              sx={{
+                backgroundColor: isDarkMode ? '#60a5fa' : '#6366f1',
+                color: '#ffffff',
+                fontWeight: 600,
+                boxShadow: isDarkMode 
+                  ? '0 2px 8px rgba(96, 165, 250, 0.3)' 
+                  : '0 2px 8px rgba(99, 102, 241, 0.3)',
+              }}
+            />
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={(activeStep / (steps.length - 1)) * 100}
+            sx={{
+              height: 8,
+              borderRadius: 4,
+              backgroundColor: isDarkMode ? '#334155' : '#e5e7eb',
+              '& .MuiLinearProgress-bar': {
+                borderRadius: 4,
+                background: isDarkMode
+                  ? 'linear-gradient(90deg, #60a5fa 0%, #8b5cf6 100%)'
+                  : 'linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%)',
+                boxShadow: isDarkMode 
+                  ? '0 2px 8px rgba(96, 165, 250, 0.3)' 
+                  : '0 2px 8px rgba(99, 102, 241, 0.3)',
+              },
+            }}
+          />
+        </Box>
+
+        {/* Stepper */}
+        <Box sx={{ px: 4, pb: 4 }}>
+          <Stepper activeStep={activeStep} sx={{
+            '& .MuiStepLabel-root': {
+              '& .MuiStepLabel-label': {
+                fontWeight: 500,
+                color: isDarkMode ? '#e2e8f0' : '#6b7280',
+              },
+            },
+            '& .MuiStepIcon-root': {
+              fontSize: '1.5rem',
+              color: isDarkMode ? '#475569' : '#d1d5db',
+              '&.Mui-active': {
+                color: isDarkMode ? '#60a5fa' : '#6366f1',
+              },
+              '&.Mui-completed': {
+                color: isDarkMode ? '#34d399' : '#10b981',
+              },
+            },
+            '& .MuiStepConnector-line': {
+              borderColor: isDarkMode ? '#475569' : '#d1d5db',
+            },
+          }}>
+            {steps.map((label, index) => (
+              <Step key={label}>
+                <StepLabel sx={{
+                  '& .MuiStepLabel-label': {
+                    color: activeStep >= index
+                      ? (isDarkMode ? '#60a5fa' : '#6366f1')
+                      : (isDarkMode ? '#64748b' : '#9ca3af'),
+                    fontWeight: activeStep === index ? 600 : 500,
+                  },
+                }}>
+                  {label}
+                </StepLabel>
+              </Step>
+            ))}
+          </Stepper>
+        </Box>
+
+        {/* Content */}
+        <Box>
+          {renderStepContent(activeStep)}
+        </Box>
+
+        {/* Navigation */}
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 4,
+          pt: 2,
+          borderTop: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+          background: isDarkMode ? '#1e293b' : '#f9fafb',
+        }}>
+          <Button
+            disabled={activeStep === 0}
+            onClick={handleBack}
+            variant="outlined"
+            startIcon={<ArrowBack />}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 500,
+              px: 3,
+              py: 1.5,
+              color: isDarkMode ? '#60a5fa' : '#6366f1',
+              borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
+              backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.05)' : 'transparent',
+              '&:hover': {
+                backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                borderColor: isDarkMode ? '#93c5fd' : '#8b5cf6',
+              },
+              '&:disabled': {
+                color: isDarkMode ? '#64748b' : '#9ca3af',
+                borderColor: isDarkMode ? '#475569' : '#d1d5db',
+                backgroundColor: 'transparent',
+              },
+            }}
+          >
+            Anterior
+          </Button>
+          <Box>
+            {activeStep === steps.length - 1 ? (
+              <Button
+                variant="contained"
+                startIcon={<Check />}
+                onClick={handleSubmit}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1.5,
+                  background: isDarkMode
+                    ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
+                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  boxShadow: isDarkMode 
+                    ? '0 4px 16px rgba(52, 211, 153, 0.3)' 
+                    : '0 4px 16px rgba(16, 185, 129, 0.3)',
+                  '&:hover': {
+                    background: isDarkMode
+                      ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
+                      : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                    boxShadow: isDarkMode 
+                      ? '0 6px 20px rgba(52, 211, 153, 0.4)' 
+                      : '0 6px 20px rgba(16, 185, 129, 0.4)',
+                  },
+                }}
+              >
+                Completar Registro
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                endIcon={<ArrowForward />}
+                onClick={handleNext}
+                sx={{
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  px: 4,
+                  py: 1.5,
+                  background: isDarkMode
+                    ? 'linear-gradient(135deg, #60a5fa 0%, #8b5cf6 100%)'
+                    : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  boxShadow: isDarkMode 
+                    ? '0 4px 16px rgba(96, 165, 250, 0.3)' 
+                    : '0 4px 16px rgba(99, 102, 241, 0.3)',
+                  '&:hover': {
+                    background: isDarkMode
+                      ? 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)'
+                      : 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                    boxShadow: isDarkMode 
+                      ? '0 6px 20px rgba(96, 165, 250, 0.4)' 
+                      : '0 6px 20px rgba(99, 102, 241, 0.4)',
+                  },
+                }}
+              >
+                Siguiente
+              </Button>
+            )}
+          </Box>
+        </Box>
+      </Paper>
+
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccess(false)}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          ¡Proveedor registrado exitosamente!
+        </Alert>
+      </Snackbar>
+    </Container>
   );
 };
 

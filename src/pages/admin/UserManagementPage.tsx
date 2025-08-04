@@ -448,69 +448,106 @@ const UserManagementPage: React.FC = () => {
     <>
       <div className="container">
         <section className="hero">
-          <h1 className="hero-title">Gestión de Usuarios</h1>
-          <p className="hero-subtitle">
-            Crea, edita y gestiona usuarios del sistema con sus roles y permisos
-          </p>
+          <div className="hero-header">
+            <div className="hero-title-section">
+              <h1 className="hero-title">👥 Gestión de Usuarios</h1>
+              <p className="hero-subtitle">
+                Crea, edita y gestiona usuarios del sistema con sus roles y permisos
+              </p>
+            </div>
+            <div className="hero-stats">
+              <div className="stat-card">
+                <span className="stat-number">{users.length}</span>
+                <span className="stat-label">Total Usuarios</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{users.filter(u => u.status === 'active').length}</span>
+                <span className="stat-label">Activos</span>
+              </div>
+              <div className="stat-card">
+                <span className="stat-number">{users.filter(u => u.status === 'pending').length}</span>
+                <span className="stat-label">Pendientes</span>
+              </div>
+            </div>
+          </div>
 
-          <div className="tabs">
-            <button
-              className={`tab ${activeTab === 'list' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('list');
-                handleClear();
-              }}
-            >
-              👥 Lista de Usuarios
-            </button>
-            <button
-              className={`tab ${activeTab === 'create' ? 'active' : ''}`}
-              onClick={() => {
-                setActiveTab('create');
-                handleClear();
-              }}
-            >
-              ➕ Crear Usuario
-            </button>
-            {editingUser && (
+          <div className="tabs-container">
+            <div className="tabs">
               <button
-                className={`tab ${activeTab === 'edit' ? 'active' : ''}`}
-                onClick={() => setActiveTab('edit')}
+                className={`tab ${activeTab === 'list' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab('list');
+                  handleClear();
+                }}
               >
-                ✏️ Editar Usuario
+                <span className="tab-icon">👥</span>
+                <span className="tab-text">Lista de Usuarios</span>
               </button>
-            )}
+              <button
+                className={`tab ${activeTab === 'create' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab('create');
+                  handleClear();
+                }}
+              >
+                <span className="tab-icon">➕</span>
+                <span className="tab-text">Crear Usuario</span>
+              </button>
+              {editingUser && (
+                <button
+                  className={`tab ${activeTab === 'edit' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('edit')}
+                >
+                  <span className="tab-icon">✏️</span>
+                  <span className="tab-text">Editar Usuario</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {activeTab === 'list' && (
             <div className="users-list">
               <div className="list-header">
-                <h3>Usuarios del Sistema</h3>
+                <div className="list-title-section">
+                  <h3 className="list-title">📋 Usuarios del Sistema</h3>
+                  <p className="list-subtitle">Gestiona todos los usuarios registrados</p>
+                </div>
                 <div className="list-filters">
-                  <select className="form-input">
-                    <option value="">Todos los roles</option>
-                    <option value="admin">Administrador</option>
-                    <option value="purchases">Compras</option>
-                    <option value="finance">Finanzas</option>
-                    <option value="provider">Proveedor</option>
-                  </select>
-                  <select className="form-input">
-                    <option value="">Todos los estados</option>
-                    <option value="active">Activo</option>
-                    <option value="inactive">Inactivo</option>
-                    <option value="pending">Pendiente</option>
-                  </select>
+                  <div className="filter-group">
+                    <label className="filter-label">Filtrar por Rol:</label>
+                    <select className="filter-select">
+                      <option value="">Todos los roles</option>
+                      <option value="admin">Administrador</option>
+                      <option value="purchases">Compras</option>
+                      <option value="finance">Finanzas</option>
+                      <option value="provider">Proveedor</option>
+                    </select>
+                  </div>
+                  <div className="filter-group">
+                    <label className="filter-label">Filtrar por Estado:</label>
+                    <select className="filter-select">
+                      <option value="">Todos los estados</option>
+                      <option value="active">Activo</option>
+                      <option value="inactive">Inactivo</option>
+                      <option value="pending">Pendiente</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div className="users-grid">
                 {users.map(user => (
                   <div key={user.id} className="user-card">
-                    <div className="user-header">
+                    <div className="user-card-header">
+                      <div className="user-avatar">
+                        <span className="user-avatar-text">
+                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </span>
+                      </div>
                       <div className="user-info">
-                        <h4>{user.name}</h4>
+                        <h4 className="user-name">{user.name}</h4>
                         <p className="user-email">{user.email}</p>
-                        <div className="user-meta">
+                        <div className="user-badges">
                           <span className={`role-badge ${getRoleColor(user.role)}`}>
                             {getRoleText(user.role)}
                           </span>
@@ -521,87 +558,100 @@ const UserManagementPage: React.FC = () => {
                       </div>
                       <div className="user-actions">
                         <button
-                          className="btn btn-primary btn-sm"
+                          className="action-btn edit-btn"
                           onClick={() => handleEdit(user)}
+                          title="Editar usuario"
                         >
-                          ✏️ Editar
+                          ✏️
                         </button>
                         <button
-                          className="btn btn-danger btn-sm"
+                          className="action-btn delete-btn"
                           onClick={() => handleDelete(user.id)}
+                          title="Eliminar usuario"
                         >
-                          🗑️ Eliminar
+                          🗑️
                         </button>
                       </div>
                     </div>
 
-                    <div className="user-details">
-                      <div className="detail-row">
-                        <span className="detail-label">Creado:</span>
-                        <span className="detail-value">
-                          {new Date(user.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      {user.lastLogin && (
-                        <div className="detail-row">
-                          <span className="detail-label">Último acceso:</span>
-                          <span className="detail-value">
-                            {new Date(user.lastLogin).toLocaleDateString()}
-                          </span>
+                    <div className="user-card-body">
+                      <div className="user-details">
+                        <div className="detail-item">
+                          <span className="detail-icon">📅</span>
+                          <div className="detail-content">
+                            <span className="detail-label">Creado:</span>
+                            <span className="detail-value">
+                              {new Date(user.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
-                      )}
-                      <div className="detail-row">
-                        <span className="detail-label">Permisos:</span>
-                        <span className="detail-value">
-                          {user.permissions.length} permisos
-                        </span>
+                        {user.lastLogin && (
+                          <div className="detail-item">
+                            <span className="detail-icon">🕒</span>
+                            <div className="detail-content">
+                              <span className="detail-label">Último acceso:</span>
+                              <span className="detail-value">
+                                {new Date(user.lastLogin).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        <div className="detail-item">
+                          <span className="detail-icon">🔐</span>
+                          <div className="detail-content">
+                            <span className="detail-label">Permisos:</span>
+                            <span className="detail-value">
+                              {user.permissions.length} permisos
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="user-permissions">
-                      <h5>Permisos:</h5>
-                      <div className="permissions-list">
-                        {user.permissions.map(permission => (
-                          <span key={permission} className="permission-tag">
-                            {permission}
-                          </span>
-                        ))}
+                      <div className="user-permissions">
+                        <h5 className="permissions-title">🔑 Permisos Asignados:</h5>
+                        <div className="permissions-list">
+                          {user.permissions.map(permission => (
+                            <span key={permission} className="permission-tag">
+                              {permission}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="user-status-actions">
-                      {user.status === 'pending' && (
-                        <>
+                      <div className="user-status-actions">
+                        {user.status === 'pending' && (
+                          <div className="status-actions">
+                            <button
+                              className="status-btn approve-btn"
+                              onClick={() => handleStatusChange(user.id, 'active')}
+                            >
+                              ✅ Activar
+                            </button>
+                            <button
+                              className="status-btn reject-btn"
+                              onClick={() => handleStatusChange(user.id, 'inactive')}
+                            >
+                              ❌ Rechazar
+                            </button>
+                          </div>
+                        )}
+                        {user.status === 'active' && (
                           <button
-                            className="btn btn-success btn-sm"
+                            className="status-btn deactivate-btn"
+                            onClick={() => handleStatusChange(user.id, 'inactive')}
+                          >
+                            ⏸️ Desactivar
+                          </button>
+                        )}
+                        {user.status === 'inactive' && (
+                          <button
+                            className="status-btn activate-btn"
                             onClick={() => handleStatusChange(user.id, 'active')}
                           >
                             ✅ Activar
                           </button>
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleStatusChange(user.id, 'inactive')}
-                          >
-                            ❌ Rechazar
-                          </button>
-                        </>
-                      )}
-                      {user.status === 'active' && (
-                        <button
-                          className="btn btn-warning btn-sm"
-                          onClick={() => handleStatusChange(user.id, 'inactive')}
-                        >
-                          ⏸️ Desactivar
-                        </button>
-                      )}
-                      {user.status === 'inactive' && (
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={() => handleStatusChange(user.id, 'active')}
-                        >
-                          ✅ Activar
-                        </button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -611,167 +661,187 @@ const UserManagementPage: React.FC = () => {
 
           {(activeTab === 'create' || activeTab === 'edit') && (
             <div className="form-container">
-              <form onSubmit={handleSubmit} className="form">
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label htmlFor="name" className="form-label">
-                      Nombre Completo *
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`form-input ${errors.name ? 'error' : ''}`}
-                      placeholder="Nombre completo del usuario"
-                    />
-                    {errors.name && (
-                      <span className="error-message">{errors.name}</span>
-                    )}
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="email" className="form-label">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`form-input ${errors.email ? 'error' : ''}`}
-                      placeholder="usuario@empresa.com"
-                    />
-                    {errors.email && (
-                      <span className="error-message">{errors.email}</span>
-                    )}
-                  </div>
-
-                  {activeTab === 'create' && (
-                    <>
-                      <div className="form-group">
-                        <label htmlFor="password" className="form-label">
-                          Contraseña *
-                        </label>
-                        <input
-                          type="password"
-                          id="password"
-                          name="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          onBlur={handleBlur}
-                          className={`form-input ${errors.password ? 'error' : ''}`}
-                          placeholder="Contraseña segura"
-                        />
-                        {errors.password && (
-                          <span className="error-message">{errors.password}</span>
-                        )}
-                      </div>
-
-                      <div className="form-group">
-                        <label htmlFor="confirmPassword" className="form-label">
-                          Confirmar Contraseña *
-                        </label>
-                        <input
-                          type="password"
-                          id="confirmPassword"
-                          name="confirmPassword"
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          onBlur={handleBlur}
-                          className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
-                          placeholder="Confirma la contraseña"
-                        />
-                        {errors.confirmPassword && (
-                          <span className="error-message">{errors.confirmPassword}</span>
-                        )}
-                      </div>
-                    </>
-                  )}
-
-                  <div className="form-group">
-                    <label htmlFor="role" className="form-label">
-                      Rol *
-                    </label>
-                    <select
-                      id="role"
-                      name="role"
-                      value={formData.role}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      className={`form-input ${errors.role ? 'error' : ''}`}
-                    >
-                      <option value="provider">Proveedor</option>
-                      <option value="purchases">Compras</option>
-                      <option value="finance">Finanzas</option>
-                      <option value="admin">Administrador</option>
-                    </select>
-                    {errors.role && (
-                      <span className="error-message">{errors.role}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">
-                    Permisos *
-                  </label>
-                  <div className="permissions-grid">
-                    {Object.entries(availablePermissions).map(([category, permissions]) => (
-                      <div key={category} className="permission-category">
-                        <h5 className="permission-category-title">
-                          {category.charAt(0).toUpperCase() + category.slice(1)}
-                        </h5>
-                        <div className="permission-options">
-                          {permissions.map(permission => (
-                            <label key={permission} className="permission-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={formData.permissions.includes(permission)}
-                                onChange={(e) => handlePermissionChange(permission, e.target.checked)}
-                              />
-                              <span className="permission-label">{permission}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {errors.permissions && (
-                    <span className="error-message">{errors.permissions}</span>
-                  )}
-                </div>
-
-                <div className="form-actions">
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting 
-                      ? 'Guardando...' 
-                      : activeTab === 'create' 
-                        ? 'Crear Usuario' 
-                        : 'Actualizar Usuario'
+              <div className="form-card">
+                <div className="form-header">
+                  <h3 className="form-title">
+                    {activeTab === 'create' ? '➕ Crear Nuevo Usuario' : '✏️ Editar Usuario'}
+                  </h3>
+                  <p className="form-subtitle">
+                    {activeTab === 'create' 
+                      ? 'Completa la información para crear un nuevo usuario' 
+                      : 'Modifica la información del usuario seleccionado'
                     }
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      handleClear();
-                      setActiveTab('list');
-                    }}
-                    disabled={isSubmitting}
-                  >
-                    Cancelar
-                  </button>
+                  </p>
                 </div>
-              </form>
+
+                <form onSubmit={handleSubmit} className="form">
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label htmlFor="name" className="form-label">
+                        <span className="label-icon">👤</span>
+                        Nombre Completo *
+                      </label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        onBlur={handleBlur}
+                        className={`form-input ${errors.name ? 'error' : ''}`}
+                        placeholder="Nombre completo del usuario"
+                      />
+                      {errors.name && (
+                        <span className="error-message">{errors.name}</span>
+                      )}
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="email" className="form-label">
+                        <span className="label-icon">📧</span>
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        onBlur={handleBlur}
+                        className={`form-input ${errors.email ? 'error' : ''}`}
+                        placeholder="usuario@empresa.com"
+                      />
+                      {errors.email && (
+                        <span className="error-message">{errors.email}</span>
+                      )}
+                    </div>
+
+                    {activeTab === 'create' && (
+                      <>
+                        <div className="form-group">
+                          <label htmlFor="password" className="form-label">
+                            <span className="label-icon">🔒</span>
+                            Contraseña *
+                          </label>
+                          <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            onBlur={handleBlur}
+                            className={`form-input ${errors.password ? 'error' : ''}`}
+                            placeholder="Contraseña segura"
+                          />
+                          {errors.password && (
+                            <span className="error-message">{errors.password}</span>
+                          )}
+                        </div>
+
+                        <div className="form-group">
+                          <label htmlFor="confirmPassword" className="form-label">
+                            <span className="label-icon">🔐</span>
+                            Confirmar Contraseña *
+                          </label>
+                          <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleInputChange}
+                            onBlur={handleBlur}
+                            className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
+                            placeholder="Confirma la contraseña"
+                          />
+                          {errors.confirmPassword && (
+                            <span className="error-message">{errors.confirmPassword}</span>
+                          )}
+                        </div>
+                      </>
+                    )}
+
+                    <div className="form-group">
+                      <label htmlFor="role" className="form-label">
+                        <span className="label-icon">👑</span>
+                        Rol *
+                      </label>
+                      <select
+                        id="role"
+                        name="role"
+                        value={formData.role}
+                        onChange={handleInputChange}
+                        onBlur={handleBlur}
+                        className={`form-input ${errors.role ? 'error' : ''}`}
+                      >
+                        <option value="provider">Proveedor</option>
+                        <option value="purchases">Compras</option>
+                        <option value="finance">Finanzas</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                      {errors.role && (
+                        <span className="error-message">{errors.role}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      <span className="label-icon">🔑</span>
+                      Permisos *
+                    </label>
+                    <div className="permissions-grid">
+                      {Object.entries(availablePermissions).map(([category, permissions]) => (
+                        <div key={category} className="permission-category">
+                          <h5 className="permission-category-title">
+                            {category.charAt(0).toUpperCase() + category.slice(1)}
+                          </h5>
+                          <div className="permission-options">
+                            {permissions.map(permission => (
+                              <label key={permission} className="permission-checkbox">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.permissions.includes(permission)}
+                                  onChange={(e) => handlePermissionChange(permission, e.target.checked)}
+                                />
+                                <span className="permission-label">{permission}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    {errors.permissions && (
+                      <span className="error-message">{errors.permissions}</span>
+                    )}
+                  </div>
+
+                  <div className="form-actions">
+                    <button
+                      type="submit"
+                      className="btn btn-primary"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting 
+                        ? '💾 Guardando...' 
+                        : activeTab === 'create' 
+                          ? '➕ Crear Usuario' 
+                          : '💾 Actualizar Usuario'
+                      }
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        handleClear();
+                        setActiveTab('list');
+                      }}
+                      disabled={isSubmitting}
+                    >
+                      ❌ Cancelar
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           )}
         </section>

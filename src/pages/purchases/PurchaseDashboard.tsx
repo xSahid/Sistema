@@ -184,7 +184,7 @@ const PurchaseDashboard: React.FC = () => {
               <p style={{ color: 'white', marginBottom: '1rem' }}>
                 Genera una nueva solicitud de cotización
               </p>
-              <Link to="/purchases/new-request" className="btn btn-primary">
+              <Link to="/purchases/create-rfq" className="btn btn-primary">
                 Nueva Solicitud
               </Link>
             </div>

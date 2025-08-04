@@ -11,6 +11,7 @@ interface AppContextType {
   user: User | null;
   login: (user: User) => void;
   logout: () => void;
+  changeRole: (role: 'admin' | 'provider' | 'purchases' | 'finance') => void;
   isAuthenticated: boolean;
   isDarkMode: boolean;
   toggleDarkMode: () => void;
@@ -23,10 +24,16 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  // Usuario de prueba para desarrollo
+  const [user, setUser] = useState<User | null>({
+    id: '1',
+    name: 'Usuario de Prueba',
+    email: 'test@example.com',
+    role: 'admin' // Puedes cambiar a 'purchases', 'finance', o 'provider'
+  });
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
+    return saved ? JSON.parse(saved) : true; // Force dark mode by default
   });
 
   const login = (userData: User) => {
@@ -35,6 +42,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   const logout = () => {
     setUser(null);
+  };
+
+  const changeRole = (role: 'admin' | 'provider' | 'purchases' | 'finance') => {
+    if (user) {
+      setUser({ ...user, role });
+    }
   };
 
   const toggleDarkMode = () => {
@@ -49,6 +62,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     user,
     login,
     logout,
+    changeRole,
     isAuthenticated,
     isDarkMode,
     toggleDarkMode,

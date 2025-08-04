@@ -16,25 +16,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
   };
 
   const navigationItems = [
-    // Páginas públicas
-    { path: '/', label: 'Inicio', icon: '🏠', public: true },
-    { path: '/about', label: 'Acerca de', icon: 'ℹ️', public: true },
-    { path: '/contact', label: 'Contacto', icon: '📞', public: true },
+    // Páginas públicas (solo cuando NO está autenticado)
+    { path: '/', label: 'Inicio', icon: '🏠', public: true, guestOnly: true },
+    { path: '/about', label: 'Acerca de', icon: 'ℹ️', public: true, guestOnly: true },
+    { path: '/contact', label: 'Contacto', icon: '📞', public: true, guestOnly: true },
     
     // Login (solo cuando no hay usuario)
     { path: '/login', label: 'Iniciar Sesión', icon: '🔐', public: true, guestOnly: true },
     
-    // Registro de proveedores
-    { path: '/providers/register', label: 'Registro de Proveedores', icon: '📝', public: true },
+    // Registro de proveedores (solo cuando NO está autenticado)
+    { path: '/providers/registration', label: 'Registrarse como Proveedor', icon: '📝', public: true, guestOnly: true },
     
     // Dashboard de proveedores
     { path: '/providers/dashboard', label: 'Dashboard Proveedor', icon: '📊', role: 'provider' },
+    { path: '/providers/quotations', label: 'Solicitudes de Cotización', icon: '📋', role: 'provider' },
     { path: '/providers/payments', label: 'Mis Pagos', icon: '💰', role: 'provider' },
     
     // Dashboard de compras
     { path: '/purchases/dashboard', label: 'Dashboard Compras', icon: '🛒', role: 'purchases' },
-    { path: '/purchases/new-request', label: 'Nueva Solicitud', icon: '📋', role: 'purchases' },
+    { path: '/purchases/create-rfq', label: 'Nueva Solicitud', icon: '📋', role: 'purchases' },
     { path: '/purchases/quotations', label: 'Cotizaciones', icon: '📊', role: 'purchases' },
+    { path: '/purchases/quotation-management', label: 'Gestión de Cotizaciones', icon: '📋', role: 'purchases' },
+    { path: '/purchases/purchase-orders', label: 'Órdenes de Compra', icon: '📦', role: 'purchases' },
     { path: '/purchases/create-order', label: 'Crear Orden', icon: '📦', role: 'purchases' },
     
     // Dashboard de finanzas

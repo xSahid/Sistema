@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import iniciarSesionImg from '../assets/Img/iniciarsesion.png';
+import cerrarSesionImg from '../assets/Img/CerrarSesion.png';
+import NotificationSystem from '../components/NotificationSystem';
+import LogoutConfirmDialog from '../components/LogoutConfirmDialog';
 
 interface HeaderProps {
   onSidebarToggle: () => void;
@@ -9,6 +13,8 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
   const { user, logout, isDarkMode, toggleDarkMode } = useAppContext();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -45,16 +51,36 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
         
         {/* Desktop navigation - Simplified */}
         <nav className="nav desktop-nav">
+          {user && (
+            <button 
+              onClick={() => setShowNotifications(true)}
+              className="notification-btn"
+              title="Notificaciones"
+            >
+              <span className="notification-icon">🔔</span>
+              <span className="notification-badge">3</span>
+            </button>
+          )}
+          
           {user ? (
             <button 
-              onClick={() => { logout(); closeMenu(); }}
-              className="btn-register"
+              onClick={() => { setShowLogoutConfirm(true); closeMenu(); }}
+              className="logout-image-btn"
+              title="Cerrar Sesión"
             >
-              Cerrar Sesión
+              <img 
+                src={cerrarSesionImg} 
+                alt="Cerrar Sesión" 
+                className={`logout-image ${isDarkMode ? 'dark-mode' : ''}`}
+              />
             </button>
           ) : (
-            <Link to="/login" className="btn-register" onClick={closeMenu}>
-              Iniciar Sesión
+            <Link to="/dashboard" className="login-image-btn" onClick={closeMenu}>
+              <img 
+                src={iniciarSesionImg} 
+                alt="Iniciar Sesión" 
+                className={`login-image ${isDarkMode ? 'dark-mode' : ''}`}
+              />
             </Link>
           )}
           
@@ -84,16 +110,36 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
         
         {/* Mobile navigation - Simplified */}
         <nav className={`nav mobile-nav ${isMenuOpen ? 'open' : ''}`}>
+          {user && (
+            <button 
+              onClick={() => { setShowNotifications(true); closeMenu(); }}
+              className="notification-btn"
+              title="Notificaciones"
+            >
+              <span className="notification-icon">🔔</span>
+              <span className="notification-badge">3</span>
+            </button>
+          )}
+          
           {user ? (
             <button 
-              onClick={() => { logout(); closeMenu(); }}
-              className="btn-register"
+              onClick={() => { setShowLogoutConfirm(true); closeMenu(); }}
+              className="logout-image-btn"
+              title="Cerrar Sesión"
             >
-              Cerrar Sesión
+              <img 
+                src={cerrarSesionImg} 
+                alt="Cerrar Sesión" 
+                className={`logout-image ${isDarkMode ? 'dark-mode' : ''}`}
+              />
             </button>
           ) : (
-            <Link to="/login" className="btn-register" onClick={closeMenu}>
-              Iniciar Sesión
+            <Link to="/dashboard" className="login-image-btn" onClick={closeMenu}>
+              <img 
+                src={iniciarSesionImg} 
+                alt="Iniciar Sesión" 
+                className={`login-image ${isDarkMode ? 'dark-mode' : ''}`}
+              />
             </Link>
           )}
           
@@ -121,6 +167,23 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
           </button>
         </nav>
       </div>
+
+      {/* Notification System */}
+      <NotificationSystem 
+        isOpen={showNotifications}
+        onClose={() => setShowNotifications(false)}
+      />
+
+      {/* Logout Confirm Dialog */}
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={() => {
+          logout();
+          setShowLogoutConfirm(false);
+          closeMenu();
+        }}
+      />
     </header>
   );
 };
