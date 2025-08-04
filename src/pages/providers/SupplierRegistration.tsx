@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Paper,
@@ -8,39 +8,23 @@ import {
   StepLabel,
   Button,
   TextField,
-  Card,
-  CardContent,
-  Alert,
   Chip,
   Avatar,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  IconButton,
-  Tooltip,
   Container,
   LinearProgress,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  IconButton,
 } from '@mui/material';
 import {
   Business,
-  CheckCircle,
-  Error,
-  Description,
-  Person,
-  Email,
-  Phone,
-  LocationOn,
-  CloudUpload,
-  Delete,
-  Visibility,
   ArrowBack,
   ArrowForward,
   Check,
+  Close,
+  CheckCircle,
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -50,35 +34,7 @@ import { useAppContext } from '../../context/AppContext';
 const steps = [
   'Información Fiscal',
   'Datos de Contacto',
-  'Documentos Requeridos',
   'Revisión Final',
-];
-
-const requiredDocuments = [
-  {
-    id: 'fiscalSituation',
-    name: 'Constancia de Situación Fiscal',
-    description: 'Documento que acredita la situación fiscal del proveedor',
-    required: true,
-  },
-  {
-    id: 'constitutiveAct',
-    name: 'Acta Constitutiva',
-    description: 'Documento que establece la constitución legal de la empresa',
-    required: true,
-  },
-  {
-    id: 'satOpinion',
-    name: 'Opinión Positiva SAT',
-    description: 'Opinión positiva de cumplimiento fiscal',
-    required: true,
-  },
-  {
-    id: 'legalRepresentativeId',
-    name: 'Identificación del Representante Legal',
-    description: 'INE o pasaporte del representante legal',
-    required: true,
-  },
 ];
 
 const validationSchema = yup.object({
@@ -105,17 +61,16 @@ interface FormData {
 const SupplierRegistration: React.FC = () => {
   const { isDarkMode } = useAppContext();
   const [activeStep, setActiveStep] = useState(0);
-  const [uploadedDocuments, setUploadedDocuments] = useState<Record<string, File>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
+  
   const {
     control,
     handleSubmit,
     formState: { errors },
     watch,
-    setValue,
   } = useForm<FormData>({
     resolver: yupResolver(validationSchema),
     mode: 'onChange',
@@ -131,21 +86,23 @@ const SupplierRegistration: React.FC = () => {
 
   const watchedValues = watch();
 
-  // Limpiar campos cuando se cambia de paso
-  useEffect(() => {
-    if (activeStep === 1) {
-      // Limpiar campos de contacto cuando se llega al paso 2
-      setValue('contactName', '');
-      setValue('contactEmail', '');
-      setValue('contactPhone', '');
-    }
-  }, [activeStep, setValue]);
-
   const handleNext = () => {
-    // Validar el paso actual antes de avanzar
     const currentData = getCurrentStepData();
     if (validateCurrentStep(currentData)) {
       setActiveStep((prevStep) => prevStep + 1);
+    } else {
+      // Forzar la validación para mostrar errores
+      if (activeStep === 0) {
+        // Trigger validation for step 0 fields
+        if (!watchedValues.rfc) errors.rfc = { message: 'RFC es requerido', type: 'required' };
+        if (!watchedValues.businessName) errors.businessName = { message: 'Razón social es requerida', type: 'required' };
+        if (!watchedValues.address) errors.address = { message: 'Domicilio es requerido', type: 'required' };
+      } else if (activeStep === 1) {
+        // Trigger validation for step 1 fields
+        if (!watchedValues.contactName) errors.contactName = { message: 'Nombre de contacto es requerido', type: 'required' };
+        if (!watchedValues.contactEmail) errors.contactEmail = { message: 'Email es requerido', type: 'required' };
+        if (!watchedValues.contactPhone) errors.contactPhone = { message: 'Teléfono es requerido', type: 'required' };
+      }
     }
   };
 
@@ -153,7 +110,6 @@ const SupplierRegistration: React.FC = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  // Función para obtener los datos del paso actual
   const getCurrentStepData = () => {
     switch (activeStep) {
       case 0:
@@ -168,58 +124,45 @@ const SupplierRegistration: React.FC = () => {
           contactEmail: watchedValues.contactEmail || '',
           contactPhone: watchedValues.contactPhone || '',
         };
+      case 2:
+        return {
+          // El paso 2 es solo revisión, no requiere validación adicional
+          review: true,
+        };
       default:
         return {};
     }
   };
 
-  // Función para validar el paso actual
   const validateCurrentStep = (data: any) => {
     switch (activeStep) {
       case 0:
-        return data.rfc && data.businessName && data.address;
+        // Validar que todos los campos estén llenos y sin errores
+        return data.rfc && data.businessName && data.address && 
+               !errors.rfc && !errors.businessName && !errors.address;
       case 1:
-        return data.contactName && data.contactEmail && data.contactPhone;
+        // Validar que todos los campos estén llenos y sin errores
+        return data.contactName && data.contactEmail && data.contactPhone &&
+               !errors.contactName && !errors.contactEmail && !errors.contactPhone;
       case 2:
-        return requiredDocuments.every(doc => uploadedDocuments[doc.id]);
+        // El paso 2 es solo revisión, siempre es válido
+        return true;
       default:
         return true;
     }
   };
 
-  const handleDocumentUpload = (documentId: string, file: File) => {
-    setUploadedDocuments((prev) => ({
-      ...prev,
-      [documentId]: file,
-    }));
-  };
-
-  const handleDocumentDelete = (documentId: string) => {
-    setUploadedDocuments((prev) => {
-      const newDocs = { ...prev };
-      delete newDocs[documentId];
-      return newDocs;
-    });
-  };
-
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       
-      console.log('Supplier registration data:', {
-        ...data,
-        documents: uploadedDocuments,
-      });
+      console.log('Supplier registration data:', data);
       
-      // Show success dialog
       setDialogMessage('Proveedor registrado exitosamente. Su solicitud ha sido enviada y está pendiente de aprobación.');
       setShowSuccessDialog(true);
     } catch (error) {
       console.error('Error registering supplier:', error);
-      
-      // Show error dialog
       setDialogMessage('Error al registrar proveedor. Por favor, intente nuevamente.');
       setShowErrorDialog(true);
     } finally {
@@ -229,7 +172,6 @@ const SupplierRegistration: React.FC = () => {
 
   const handleSuccessDialogClose = () => {
     setShowSuccessDialog(false);
-    // Redirect to dashboard or home
     window.location.href = '/';
   };
 
@@ -399,7 +341,6 @@ const SupplierRegistration: React.FC = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    value={field.value || ''}
                     fullWidth
                     label="Nombre del Contacto"
                     error={!!errors.contactName}
@@ -447,7 +388,6 @@ const SupplierRegistration: React.FC = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    value={field.value || ''}
                     fullWidth
                     label="Email de Contacto"
                     type="email"
@@ -496,7 +436,6 @@ const SupplierRegistration: React.FC = () => {
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    value={field.value || ''}
                     fullWidth
                     label="Teléfono de Contacto"
                     error={!!errors.contactPhone}
@@ -540,250 +479,105 @@ const SupplierRegistration: React.FC = () => {
           </Box>
         );
 
-      case 2:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-              Documentos Requeridos
-            </Typography>
-            <Alert severity="info" sx={{ mb: 3, backgroundColor: isDarkMode ? '#1e293b' : '#f0f9ff', color: isDarkMode ? '#e2e8f0' : '#1e40af' }}>
-              Todos los documentos deben estar en formato PDF y no exceder 10MB cada uno.
-            </Alert>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-              {requiredDocuments.map((doc) => (
-                <Box key={doc.id}>
-                  <Card variant="outlined" sx={{ 
-                    backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                    borderColor: isDarkMode ? '#334155' : '#e5e7eb',
-                  }}>
-                    <CardContent>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                        <Description sx={{ mr: 1, color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        <Typography variant="subtitle1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-                          {doc.name}
-                        </Typography>
-                        {doc.required && (
-                          <Chip label="Requerido" size="small" color="error" sx={{ ml: 1 }} />
-                        )}
-                      </Box>
-                      
-                      <Typography variant="body2" sx={{ mb: 2, color: isDarkMode ? '#cbd5e1' : '#6b7280' }}>
-                        {doc.description}
-                      </Typography>
+             case 2:
+         return (
+           <Box sx={{ p: 3 }}>
+             <Typography variant="h6" sx={{
+               color: isDarkMode ? '#f8fafc' : '#1f2937',
+               fontWeight: 600,
+               mb: 3,
+             }}>
+               Revisión de Datos
+             </Typography>
+             
+             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+               {/* Información Fiscal */}
+               <Box sx={{
+                 p: 3,
+                 backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                 borderRadius: 2,
+                 border: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+               }}>
+                 <Typography variant="subtitle1" sx={{
+                   color: isDarkMode ? '#60a5fa' : '#6366f1',
+                   fontWeight: 600,
+                   mb: 2,
+                 }}>
+                   Información Fiscal
+                 </Typography>
+                 <Box sx={{ mb: 2 }}>
+                   <Typography variant="body2" sx={{ color: isDarkMode ? '#cbd5e1' : '#6b7280', mb: 0.5 }}>
+                     RFC:
+                   </Typography>
+                   <Typography variant="body1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937', fontWeight: 500 }}>
+                     {watchedValues.rfc || 'No especificado'}
+                   </Typography>
+                 </Box>
+                 <Box sx={{ mb: 2 }}>
+                   <Typography variant="body2" sx={{ color: isDarkMode ? '#cbd5e1' : '#6b7280', mb: 0.5 }}>
+                     Razón Social:
+                   </Typography>
+                   <Typography variant="body1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937', fontWeight: 500 }}>
+                     {watchedValues.businessName || 'No especificado'}
+                   </Typography>
+                 </Box>
+                 <Box>
+                   <Typography variant="body2" sx={{ color: isDarkMode ? '#cbd5e1' : '#6b7280', mb: 0.5 }}>
+                     Domicilio Fiscal:
+                   </Typography>
+                   <Typography variant="body1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937', fontWeight: 500 }}>
+                     {watchedValues.address || 'No especificado'}
+                   </Typography>
+                 </Box>
+               </Box>
 
-                      {uploadedDocuments[doc.id] ? (
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <CheckCircle color="success" sx={{ mr: 1 }} />
-                            <Typography variant="body2" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-                              {uploadedDocuments[doc.id].name}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Tooltip title="Ver documento">
-                              <IconButton size="small" sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }}>
-                                <Visibility />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Eliminar">
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={() => handleDocumentDelete(doc.id)}
-                              >
-                                <Delete />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </Box>
-                      ) : (
-                        <Button
-                          variant="outlined"
-                          startIcon={<CloudUpload />}
-                          component="label"
-                          fullWidth
-                          sx={{
-                            borderColor: isDarkMode ? '#60a5fa' : '#6366f1',
-                            color: isDarkMode ? '#60a5fa' : '#6366f1',
-                            '&:hover': {
-                              borderColor: isDarkMode ? '#93c5fd' : '#8b5cf6',
-                              backgroundColor: isDarkMode ? 'rgba(96, 165, 250, 0.1)' : 'rgba(99, 102, 241, 0.1)',
-                            },
-                          }}
-                        >
-                          Subir Documento
-                          <input
-                            type="file"
-                            hidden
-                            accept=".pdf"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                handleDocumentUpload(doc.id, file);
-                              }
-                            }}
-                          />
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        );
+               {/* Datos de Contacto */}
+               <Box sx={{
+                 p: 3,
+                 backgroundColor: isDarkMode ? '#1e293b' : '#f8fafc',
+                 borderRadius: 2,
+                 border: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
+               }}>
+                 <Typography variant="subtitle1" sx={{
+                   color: isDarkMode ? '#60a5fa' : '#6366f1',
+                   fontWeight: 600,
+                   mb: 2,
+                 }}>
+                   Datos de Contacto
+                 </Typography>
+                 <Box sx={{ mb: 2 }}>
+                   <Typography variant="body2" sx={{ color: isDarkMode ? '#cbd5e1' : '#6b7280', mb: 0.5 }}>
+                     Nombre del Contacto:
+                   </Typography>
+                   <Typography variant="body1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937', fontWeight: 500 }}>
+                     {watchedValues.contactName || 'No especificado'}
+                   </Typography>
+                 </Box>
+                 <Box sx={{ mb: 2 }}>
+                   <Typography variant="body2" sx={{ color: isDarkMode ? '#cbd5e1' : '#6b7280', mb: 0.5 }}>
+                     Email:
+                   </Typography>
+                   <Typography variant="body1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937', fontWeight: 500 }}>
+                     {watchedValues.contactEmail || 'No especificado'}
+                   </Typography>
+                 </Box>
+                 <Box>
+                   <Typography variant="body2" sx={{ color: isDarkMode ? '#cbd5e1' : '#6b7280', mb: 0.5 }}>
+                     Teléfono:
+                   </Typography>
+                   <Typography variant="body1" sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937', fontWeight: 500 }}>
+                     {watchedValues.contactPhone || 'No especificado'}
+                   </Typography>
+                 </Box>
+               </Box>
+             </Box>
+           </Box>
+         );
 
-      case 3:
-        return (
-          <Box>
-            <Typography variant="h6" gutterBottom sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-              Revisión Final
-            </Typography>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-              <Box>
-                <Card sx={{ 
-                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : '#e5e7eb',
-                }}>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-                      Información Fiscal
-                    </Typography>
-                    <List dense>
-                      <ListItem>
-                        <ListItemIcon>
-                          <Business sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="RFC"
-                          secondary={watchedValues.rfc}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: isDarkMode ? '#f8fafc' : '#1f2937' },
-                            '& .MuiListItemText-secondary': { color: isDarkMode ? '#cbd5e1' : '#6b7280' },
-                          }}
-                        />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemIcon>
-                          <Business sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Razón Social"
-                          secondary={watchedValues.businessName}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: isDarkMode ? '#f8fafc' : '#1f2937' },
-                            '& .MuiListItemText-secondary': { color: isDarkMode ? '#cbd5e1' : '#6b7280' },
-                          }}
-                        />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemIcon>
-                          <LocationOn sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Domicilio"
-                          secondary={watchedValues.address}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: isDarkMode ? '#f8fafc' : '#1f2937' },
-                            '& .MuiListItemText-secondary': { color: isDarkMode ? '#cbd5e1' : '#6b7280' },
-                          }}
-                        />
-                      </ListItem>
-                    </List>
-                  </CardContent>
-                </Card>
-              </Box>
-
-              <Box>
-                <Card sx={{ 
-                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : '#e5e7eb',
-                }}>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-                      Datos de Contacto
-                    </Typography>
-                    <List dense>
-                      <ListItem>
-                        <ListItemIcon>
-                          <Person sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Nombre"
-                          secondary={watchedValues.contactName}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: isDarkMode ? '#f8fafc' : '#1f2937' },
-                            '& .MuiListItemText-secondary': { color: isDarkMode ? '#cbd5e1' : '#6b7280' },
-                          }}
-                        />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemIcon>
-                          <Email sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Email"
-                          secondary={watchedValues.contactEmail}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: isDarkMode ? '#f8fafc' : '#1f2937' },
-                            '& .MuiListItemText-secondary': { color: isDarkMode ? '#cbd5e1' : '#6b7280' },
-                          }}
-                        />
-                      </ListItem>
-                      <ListItem>
-                        <ListItemIcon>
-                          <Phone sx={{ color: isDarkMode ? '#60a5fa' : '#6366f1' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary="Teléfono"
-                          secondary={watchedValues.contactPhone}
-                          sx={{
-                            '& .MuiListItemText-primary': { color: isDarkMode ? '#f8fafc' : '#1f2937' },
-                            '& .MuiListItemText-secondary': { color: isDarkMode ? '#cbd5e1' : '#6b7280' },
-                          }}
-                        />
-                      </ListItem>
-                    </List>
-                  </CardContent>
-                </Card>
-              </Box>
-
-              <Box sx={{ gridColumn: '1 / -1' }}>
-                <Card sx={{ 
-                  backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-                  borderColor: isDarkMode ? '#334155' : '#e5e7eb',
-                }}>
-                  <CardContent>
-                    <Typography variant="subtitle1" gutterBottom sx={{ color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-                      Documentos Cargados
-                    </Typography>
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
-                      {requiredDocuments.map((doc) => (
-                        <Box key={doc.id} sx={{ display: 'flex', alignItems: 'center' }}>
-                          {uploadedDocuments[doc.id] ? (
-                            <CheckCircle color="success" />
-                          ) : (
-                            <Error color="error" />
-                          )}
-                          <Typography variant="body2" sx={{ ml: 1, color: isDarkMode ? '#f8fafc' : '#1f2937' }}>
-                            {doc.name}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Box>
-            </Box>
-          </Box>
-        );
-
-      default:
-        return null;
-    }
-  };
+       default:
+         return null;
+     }
+   };
 
   const canProceed = () => {
     switch (activeStep) {
@@ -794,8 +588,7 @@ const SupplierRegistration: React.FC = () => {
         return !errors.contactName && !errors.contactEmail && !errors.contactPhone &&
                watchedValues.contactName && watchedValues.contactEmail && watchedValues.contactPhone;
       case 2:
-        return requiredDocuments.every(doc => uploadedDocuments[doc.id]);
-      case 3:
+        // En el paso de revisión, siempre se puede proceder
         return true;
       default:
         return false;
@@ -883,8 +676,8 @@ const SupplierRegistration: React.FC = () => {
             }}>
               Progreso
             </Typography>
-            <Chip 
-              label={`${Math.round((activeStep / (steps.length - 1)) * 100)}%`}
+                         <Chip 
+               label={`${Math.round(((activeStep + 1) / steps.length) * 100)}%`}
               sx={{
                 backgroundColor: isDarkMode ? '#60a5fa' : '#6366f1',
                 color: '#ffffff',
@@ -895,9 +688,9 @@ const SupplierRegistration: React.FC = () => {
               }}
             />
           </Box>
-          <LinearProgress
-            variant="determinate"
-            value={(activeStep / (steps.length - 1)) * 100}
+                     <LinearProgress
+             variant="determinate"
+             value={((activeStep + 1) / steps.length) * 100}
             sx={{
               height: 8,
               borderRadius: 4,
@@ -1085,8 +878,8 @@ const SupplierRegistration: React.FC = () => {
          PaperProps={{
            sx: {
              borderRadius: 3,
-             backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
-             border: isDarkMode ? '1px solid #1e293b' : '1px solid #e5e7eb',
+             backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+             border: isDarkMode ? '1px solid #334155' : '1px solid #e5e7eb',
              boxShadow: isDarkMode 
                ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' 
                : '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
@@ -1094,87 +887,72 @@ const SupplierRegistration: React.FC = () => {
          }}
        >
          <DialogTitle sx={{
-           textAlign: 'center',
-           color: isDarkMode ? '#f8fafc' : '#1f2937',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'space-between',
+           pb: 1,
            borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
-           pb: 2,
          }}>
-           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-             <Avatar sx={{
-               bgcolor: isDarkMode ? '#34d399' : '#10b981',
-               color: '#ffffff',
-               width: 64,
-               height: 64,
-               boxShadow: isDarkMode 
-                 ? '0 4px 20px rgba(52, 211, 153, 0.3)' 
-                 : '0 4px 20px rgba(16, 185, 129, 0.3)',
+           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+             <Box sx={{
+               width: 48,
+               height: 48,
+               borderRadius: '50%',
+               backgroundColor: '#10b981',
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+               mr: 2,
+               boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
              }}>
-               <Check sx={{ fontSize: 32 }} />
-             </Avatar>
+               <CheckCircle sx={{ color: '#ffffff', fontSize: 24 }} />
+             </Box>
+             <Typography variant="h6" sx={{
+               color: isDarkMode ? '#f8fafc' : '#1f2937',
+               fontWeight: 600,
+             }}>
+               Proveedor Registrado
+             </Typography>
            </Box>
-           <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-             ¡Registro Exitoso!
-           </Typography>
+           <IconButton
+             onClick={handleSuccessDialogClose}
+             sx={{
+               color: isDarkMode ? '#64748b' : '#6b7280',
+               '&:hover': {
+                 backgroundColor: isDarkMode ? 'rgba(100, 116, 139, 0.1)' : 'rgba(107, 114, 128, 0.1)',
+               },
+             }}
+           >
+             <Close />
+           </IconButton>
          </DialogTitle>
-         <DialogContent sx={{ pt: 3 }}>
+         <DialogContent sx={{ pt: 3, pb: 2 }}>
            <Typography variant="body1" sx={{
              color: isDarkMode ? '#cbd5e1' : '#6b7280',
-             textAlign: 'center',
-             mb: 2,
+             lineHeight: 1.6,
            }}>
              {dialogMessage}
            </Typography>
-           <Box sx={{
-             backgroundColor: isDarkMode ? '#1e293b' : '#f0f9ff',
-             borderRadius: 2,
-             p: 2,
-             border: isDarkMode ? '1px solid #334155' : '1px solid #e0f2fe',
-           }}>
-             <Typography variant="body2" sx={{
-               color: isDarkMode ? '#e2e8f0' : '#1e40af',
-               fontWeight: 500,
-               mb: 1,
-             }}>
-               📧 Recibirá una notificación por email cuando su cuenta sea aprobada
-             </Typography>
-             <Typography variant="body2" sx={{
-               color: isDarkMode ? '#cbd5e1' : '#1e40af',
-             }}>
-               🔍 Puede consultar el estado de su solicitud en cualquier momento
-             </Typography>
-           </Box>
          </DialogContent>
-         <DialogActions sx={{
-           p: 3,
-           pt: 2,
-           borderTop: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
-         }}>
+         <DialogActions sx={{ p: 3, pt: 1 }}>
            <Button
              onClick={handleSuccessDialogClose}
              variant="contained"
-             fullWidth
              sx={{
                borderRadius: 2,
                textTransform: 'none',
                fontWeight: 600,
+               px: 4,
                py: 1.5,
-               background: isDarkMode
-                 ? 'linear-gradient(135deg, #34d399 0%, #10b981 100%)'
-                 : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-               boxShadow: isDarkMode 
-                 ? '0 4px 16px rgba(52, 211, 153, 0.3)' 
-                 : '0 4px 16px rgba(16, 185, 129, 0.3)',
+               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+               boxShadow: '0 4px 16px rgba(16, 185, 129, 0.3)',
                '&:hover': {
-                 background: isDarkMode
-                   ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
-                   : 'linear-gradient(135deg, #059669 0%, #047857 100%)',
-                 boxShadow: isDarkMode 
-                   ? '0 6px 20px rgba(52, 211, 153, 0.4)' 
-                   : '0 6px 20px rgba(16, 185, 129, 0.4)',
+                 background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                 boxShadow: '0 6px 20px rgba(16, 185, 129, 0.4)',
                },
              }}
            >
-             Continuar
+             Entendido
            </Button>
          </DialogActions>
        </Dialog>
@@ -1188,8 +966,8 @@ const SupplierRegistration: React.FC = () => {
          PaperProps={{
            sx: {
              borderRadius: 3,
-             backgroundColor: isDarkMode ? '#0f172a' : '#ffffff',
-             border: isDarkMode ? '1px solid #1e293b' : '1px solid #e5e7eb',
+             backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
+             border: isDarkMode ? '1px solid #334155' : '1px solid #e5e7eb',
              boxShadow: isDarkMode 
                ? '0 25px 50px -12px rgba(0, 0, 0, 0.5)' 
                : '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
@@ -1197,83 +975,68 @@ const SupplierRegistration: React.FC = () => {
          }}
        >
          <DialogTitle sx={{
-           textAlign: 'center',
-           color: isDarkMode ? '#f8fafc' : '#1f2937',
+           display: 'flex',
+           alignItems: 'center',
+           justifyContent: 'space-between',
+           pb: 1,
            borderBottom: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
-           pb: 2,
          }}>
-           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
-             <Avatar sx={{
-               bgcolor: isDarkMode ? '#f87171' : '#ef4444',
-               color: '#ffffff',
-               width: 64,
-               height: 64,
-               boxShadow: isDarkMode 
-                 ? '0 4px 20px rgba(248, 113, 113, 0.3)' 
-                 : '0 4px 20px rgba(239, 68, 68, 0.3)',
+           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+             <Box sx={{
+               width: 48,
+               height: 48,
+               borderRadius: '50%',
+               backgroundColor: '#ef4444',
+               display: 'flex',
+               alignItems: 'center',
+               justifyContent: 'center',
+               mr: 2,
+               boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
              }}>
-               <Error sx={{ fontSize: 32 }} />
-             </Avatar>
+               <Close sx={{ color: '#ffffff', fontSize: 24 }} />
+             </Box>
+             <Typography variant="h6" sx={{
+               color: isDarkMode ? '#f8fafc' : '#1f2937',
+               fontWeight: 600,
+             }}>
+               Error en el Registro
+             </Typography>
            </Box>
-           <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-             Error en el Registro
-           </Typography>
+           <IconButton
+             onClick={handleErrorDialogClose}
+             sx={{
+               color: isDarkMode ? '#64748b' : '#6b7280',
+               '&:hover': {
+                 backgroundColor: isDarkMode ? 'rgba(100, 116, 139, 0.1)' : 'rgba(107, 114, 128, 0.1)',
+               },
+             }}
+           >
+             <Close />
+           </IconButton>
          </DialogTitle>
-         <DialogContent sx={{ pt: 3 }}>
+         <DialogContent sx={{ pt: 3, pb: 2 }}>
            <Typography variant="body1" sx={{
              color: isDarkMode ? '#cbd5e1' : '#6b7280',
-             textAlign: 'center',
-             mb: 2,
+             lineHeight: 1.6,
            }}>
              {dialogMessage}
            </Typography>
-           <Box sx={{
-             backgroundColor: isDarkMode ? '#1e293b' : '#fef2f2',
-             borderRadius: 2,
-             p: 2,
-             border: isDarkMode ? '1px solid #334155' : '1px solid #fecaca',
-           }}>
-             <Typography variant="body2" sx={{
-               color: isDarkMode ? '#e2e8f0' : '#dc2626',
-               fontWeight: 500,
-               mb: 1,
-             }}>
-               🔄 Por favor, intente nuevamente
-             </Typography>
-             <Typography variant="body2" sx={{
-               color: isDarkMode ? '#cbd5e1' : '#dc2626',
-             }}>
-               📞 Si el problema persiste, contacte al soporte técnico
-             </Typography>
-           </Box>
          </DialogContent>
-         <DialogActions sx={{
-           p: 3,
-           pt: 2,
-           borderTop: `1px solid ${isDarkMode ? '#334155' : '#e5e7eb'}`,
-         }}>
+         <DialogActions sx={{ p: 3, pt: 1 }}>
            <Button
              onClick={handleErrorDialogClose}
              variant="contained"
-             fullWidth
              sx={{
                borderRadius: 2,
                textTransform: 'none',
                fontWeight: 600,
+               px: 4,
                py: 1.5,
-               background: isDarkMode
-                 ? 'linear-gradient(135deg, #f87171 0%, #ef4444 100%)'
-                 : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-               boxShadow: isDarkMode 
-                 ? '0 4px 16px rgba(248, 113, 113, 0.3)' 
-                 : '0 4px 16px rgba(239, 68, 68, 0.3)',
+               background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+               boxShadow: '0 4px 16px rgba(239, 68, 68, 0.3)',
                '&:hover': {
-                 background: isDarkMode
-                   ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)'
-                   : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-                 boxShadow: isDarkMode 
-                   ? '0 6px 20px rgba(248, 113, 113, 0.4)' 
-                   : '0 6px 20px rgba(239, 68, 68, 0.4)',
+                 background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+                 boxShadow: '0 6px 20px rgba(239, 68, 68, 0.4)',
                },
              }}
            >
