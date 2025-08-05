@@ -24,13 +24,8 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  // Usuario de prueba para desarrollo
-  const [user, setUser] = useState<User | null>({
-    id: '1',
-    name: 'Usuario de Prueba',
-    email: 'test@example.com',
-    role: 'admin' // Puedes cambiar a 'purchases', 'finance', o 'provider'
-  });
+  // Usuario por defecto no autenticado
+  const [user, setUser] = useState<User | null>(null);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : true; // Force dark mode by default

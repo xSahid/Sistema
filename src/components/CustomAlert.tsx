@@ -1,4 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import {
+  Box,
+  Typography,
+  Button,
+  Paper,
+  IconButton,
+  Fade,
+  Modal,
+} from '@mui/material';
+import {
+  CheckCircle,
+  Error,
+  Warning,
+  Info,
+  Close,
+} from '@mui/icons-material';
 
 interface CustomAlertProps {
   isOpen: boolean;
@@ -6,24 +22,24 @@ interface CustomAlertProps {
   title: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
+  onConfirm?: () => void;
+  confirmText?: string;
 }
 
-const CustomAlert: React.FC<CustomAlertProps> = ({ isOpen, onClose, title, message, type }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isAnimating, setIsAnimating] = useState(false);
-
+const CustomAlert: React.FC<CustomAlertProps> = ({ 
+  isOpen, 
+  onClose, 
+  title, 
+  message, 
+  type, 
+  onConfirm, 
+  confirmText = 'Entendido' 
+}) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-      setIsVisible(true);
-      setIsAnimating(true);
     } else {
-      setIsAnimating(false);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-        document.body.style.overflow = 'unset';
-      }, 300); // Tiempo de la animación de salida
-      return () => clearTimeout(timer);
+      document.body.style.overflow = 'unset';
     }
 
     return () => {
@@ -32,49 +48,30 @@ const CustomAlert: React.FC<CustomAlertProps> = ({ isOpen, onClose, title, messa
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !onConfirm) {
       const timer = setTimeout(() => {
         onClose();
       }, 4000);
-
       return () => clearTimeout(timer);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, onConfirm]);
 
-  if (!isVisible) return null;
+  // Debug: Log when alert should be shown
+  console.log('CustomAlert render:', { isOpen, title, message, type });
+  
+  if (!isOpen) return null;
 
   const getIcon = () => {
+    const iconStyle = { fontSize: 32 };
     switch (type) {
       case 'success':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        );
+        return <CheckCircle sx={{ ...iconStyle, color: '#10b981' }} />;
       case 'error':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-            <line x1="15" y1="9" x2="9" y2="15" stroke="currentColor" strokeWidth="2"/>
-            <line x1="9" y1="9" x2="15" y2="15" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-        );
+        return <Error sx={{ ...iconStyle, color: '#ef4444' }} />;
       case 'warning':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        );
+        return <Warning sx={{ ...iconStyle, color: '#f59e0b' }} />;
       case 'info':
-        return (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-            <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        );
+        return <Info sx={{ ...iconStyle, color: '#3b82f6' }} />;
       default:
         return null;
     }
@@ -84,143 +81,218 @@ const CustomAlert: React.FC<CustomAlertProps> = ({ isOpen, onClose, title, messa
     switch (type) {
       case 'success':
         return {
-          bg: 'var(--success-bg, #f0fdf4)',
-          border: 'var(--success-border, #bbf7d0)',
-          icon: 'var(--success-icon, #16a34a)',
-          text: 'var(--success-text, #166534)',
-          title: 'var(--success-title, #15803d)'
+          bg: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          border: '#10b981',
+          text: '#ffffff',
+          buttonBg: '#ffffff',
+          buttonText: '#10b981'
         };
       case 'error':
         return {
-          bg: 'var(--error-bg, #fef2f2)',
-          border: 'var(--error-border, #fecaca)',
-          icon: 'var(--error-icon, #dc2626)',
-          text: 'var(--error-text, #991b1b)',
-          title: 'var(--error-title, #b91c1c)'
+          bg: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+          border: '#ef4444',
+          text: '#ffffff',
+          buttonBg: '#ffffff',
+          buttonText: '#ef4444'
         };
       case 'warning':
         return {
-          bg: 'var(--warning-bg, #fffbeb)',
-          border: 'var(--warning-border, #fed7aa)',
-          icon: 'var(--warning-icon, #d97706)',
-          text: 'var(--warning-text, #92400e)',
-          title: 'var(--warning-title, #b45309)'
+          bg: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+          border: '#f59e0b',
+          text: '#ffffff',
+          buttonBg: '#ffffff',
+          buttonText: '#f59e0b'
         };
       case 'info':
         return {
-          bg: 'var(--info-bg, #eff6ff)',
-          border: 'var(--info-border, #bfdbfe)',
-          icon: 'var(--info-icon, #2563eb)',
-          text: 'var(--info-text, #1e40af)',
-          title: 'var(--info-title, #1d4ed8)'
+          bg: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          border: '#3b82f6',
+          text: '#ffffff',
+          buttonBg: '#ffffff',
+          buttonText: '#3b82f6'
         };
       default:
         return {
-          bg: 'var(--bg-primary)',
-          border: 'var(--card-border)',
-          icon: 'var(--text-primary)',
-          text: 'var(--text-primary)',
-          title: 'var(--text-primary)'
+          bg: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
+          border: '#6b7280',
+          text: '#ffffff',
+          buttonBg: '#ffffff',
+          buttonText: '#6b7280'
         };
     }
   };
 
   const colors = getColors();
 
-  return (
-    <div 
-      className="custom-alert-overlay" 
-      onClick={onClose}
-      style={{
-        animation: isAnimating ? 'fadeIn 0.3s ease-out' : 'slideOutDown 0.3s ease-in'
-      }}
-    >
-      <div 
-        className="custom-alert-modal"
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          backgroundColor: colors.bg,
-          borderColor: colors.border,
-          animation: isAnimating ? 'slideInUp 0.4s ease-out' : 'slideOutDown 0.3s ease-in'
-        }}
-      >
-        <div 
-          className="custom-alert-header"
-          style={{
-            animation: isAnimating ? 'slideInFromBottom 0.5s ease-out 0.1s both' : 'none'
-          }}
-        >
-          <div 
-            className="custom-alert-icon"
-            style={{ 
-              color: colors.icon,
-              animation: isAnimating ? 'bounceIn 0.6s ease-out 0.2s both' : 'none'
+     return (
+     <Modal
+       open={isOpen}
+       onClose={onClose}
+       sx={{
+         display: 'flex',
+         alignItems: 'center',
+         justifyContent: 'center',
+         zIndex: 9999,
+         '& .MuiBackdrop-root': {
+           backgroundColor: 'rgba(0, 0, 0, 0.8)',
+           backdropFilter: 'blur(8px)',
+         },
+       }}
+     >
+       <Fade in={isOpen}>
+         <Box
+           sx={{
+             maxWidth: 400,
+             width: '90%',
+             zIndex: 10000,
+             outline: 'none',
+           }}
+         >
+          <Paper
+            elevation={24}
+            sx={{
+              borderRadius: 3,
+              overflow: 'hidden',
+              background: colors.bg,
+              border: `2px solid ${colors.border}`,
+              position: 'relative',
+              animation: 'slideInUp 0.4s ease-out',
+              '@keyframes slideInUp': {
+                '0%': {
+                  opacity: 0,
+                  transform: 'translateY(50px) scale(0.9)',
+                },
+                '100%': {
+                  opacity: 1,
+                  transform: 'translateY(0) scale(1)',
+                },
+              },
             }}
           >
-            {getIcon()}
-          </div>
-          <button 
-            className="custom-alert-close"
-            onClick={onClose}
-            aria-label="Cerrar alerta"
-            style={{
-              animation: isAnimating ? 'slideInFromBottom 0.5s ease-out 0.3s both' : 'none'
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        </div>
-        
-        <div 
-          className="custom-alert-content"
-          style={{
-            animation: isAnimating ? 'slideInFromBottom 0.5s ease-out 0.2s both' : 'none'
-          }}
-        >
-          <h3 
-            className="custom-alert-title"
-            style={{ 
-              color: colors.title,
-              animation: isAnimating ? 'fadeInUp 0.6s ease-out 0.3s both' : 'none'
-            }}
-          >
-            {title}
-          </h3>
-          <p 
-            className="custom-alert-message"
-            style={{ 
-              color: colors.text,
-              animation: isAnimating ? 'fadeInUp 0.6s ease-out 0.4s both' : 'none'
-            }}
-          >
-            {message}
-          </p>
-        </div>
-        
-        <div 
-          className="custom-alert-footer"
-          style={{
-            animation: isAnimating ? 'slideInFromBottom 0.5s ease-out 0.3s both' : 'none'
-          }}
-        >
-          <button 
-            className="custom-alert-button"
-            onClick={onClose}
-            style={{
-              backgroundColor: colors.icon,
-              color: colors.bg,
-              animation: isAnimating ? 'bounceIn 0.6s ease-out 0.5s both' : 'none'
-            }}
-          >
-            Entendido
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+            {/* Header */}
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                p: 3,
+                pb: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  {getIcon()}
+                </Box>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    color: colors.text,
+                    fontWeight: 700,
+                    fontSize: '1.25rem',
+                  }}
+                >
+                  {title}
+                </Typography>
+              </Box>
+              
+              <IconButton
+                onClick={onClose}
+                sx={{
+                  color: colors.text,
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  },
+                }}
+              >
+                <Close />
+              </IconButton>
+            </Box>
+
+            {/* Content */}
+            <Box sx={{ px: 3, pb: 3 }}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: colors.text,
+                  opacity: 0.9,
+                  lineHeight: 1.6,
+                  mb: 3,
+                }}
+              >
+                {message}
+              </Typography>
+
+              {/* Action Button */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  gap: 2,
+                }}
+              >
+                {onConfirm && (
+                  <Button
+                    variant="outlined"
+                    onClick={onClose}
+                    sx={{
+                      color: colors.text,
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                      },
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                )}
+                <Button
+                  variant="contained"
+                  onClick={onConfirm || onClose}
+                  sx={{
+                    backgroundColor: colors.buttonBg,
+                    color: colors.buttonText,
+                    fontWeight: 600,
+                    px: 3,
+                    py: 1,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    '&:hover': {
+                      backgroundColor: colors.buttonBg,
+                      transform: 'translateY(-1px)',
+                      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.2)',
+                    },
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {confirmText}
+                </Button>
+              </Box>
+            </Box>
+                     </Paper>
+         </Box>
+       </Fade>
+     </Modal>
+   );
 };
 
 export default CustomAlert; 

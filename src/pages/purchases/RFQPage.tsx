@@ -181,11 +181,18 @@ const RFQPage: React.FC = () => {
         
       case 'budget':
         if (value && value.trim() !== '') {
-          const budgetValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-          if (isNaN(budgetValue) || budgetValue < 0) {
-            newErrors.budget = 'El presupuesto debe ser un número válido mayor a 0';
+          // Validar que solo contenga números y un punto decimal
+          const numericValue = value.replace(/[^0-9.]/g, '');
+          const budgetValue = parseFloat(numericValue);
+          
+          if (isNaN(budgetValue)) {
+            newErrors.budget = 'El presupuesto debe ser un número válido';
+          } else if (budgetValue <= 0) {
+            newErrors.budget = 'El presupuesto debe ser mayor a $0.00';
           } else if (budgetValue > 999999999) {
-            newErrors.budget = 'El presupuesto no puede exceder $999,999,999';
+            newErrors.budget = 'El presupuesto no puede exceder $999,999,999.99';
+          } else if (numericValue.includes('.') && numericValue.split('.')[1].length > 2) {
+            newErrors.budget = 'El presupuesto no puede tener más de 2 decimales';
           } else {
             delete newErrors.budget;
           }
@@ -279,13 +286,16 @@ const RFQPage: React.FC = () => {
   };
 
   const formatBudget = (value: string) => {
+    // Si el valor está vacío, retornar cadena vacía
+    if (!value || value.trim() === '') return '';
+    
     // Remover caracteres no numéricos excepto punto
     const numericValue = value.replace(/[^0-9.]/g, '');
     
     // Convertir a número
     const number = parseFloat(numericValue);
     
-    if (isNaN(number)) return '';
+    if (isNaN(number) || number === 0) return '';
     
     // Formatear como moneda
     return new Intl.NumberFormat('es-MX', {
@@ -297,8 +307,32 @@ const RFQPage: React.FC = () => {
   };
 
   const handleBudgetChange = (value: string) => {
-    // Remover formato de moneda para el valor interno
-    const numericValue = value.replace(/[^0-9.]/g, '');
+    // Si el valor está vacío, limpiar el campo
+    if (!value || value.trim() === '') {
+      handleInputChange('budget', '');
+      return;
+    }
+    
+    // Remover todos los caracteres excepto números y punto decimal
+    let numericValue = value.replace(/[^0-9.]/g, '');
+    
+    // Asegurar que solo haya un punto decimal
+    const parts = numericValue.split('.');
+    if (parts.length > 2) {
+      numericValue = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // Limitar a máximo 2 decimales
+    if (parts.length === 2 && parts[1].length > 2) {
+      numericValue = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    // Validar que no exceda el límite máximo
+    const number = parseFloat(numericValue);
+    if (!isNaN(number) && number > 999999999) {
+      numericValue = '999999999';
+    }
+    
     handleInputChange('budget', numericValue);
   };
 
@@ -584,9 +618,20 @@ const RFQPage: React.FC = () => {
                   label="Presupuesto Estimado (Opcional)"
                   value={formData.budget ? formatBudget(formData.budget) : ''}
                   onChange={(e) => handleBudgetChange(e.target.value)}
+                  onBlur={() => setTouched(prev => ({ ...prev, budget: true }))}
                   error={!!errors.budget && touched.budget}
-                  helperText={errors.budget && touched.budget ? errors.budget : 'Ingrese el presupuesto estimado en pesos mexicanos'}
+                  helperText={
+                    errors.budget && touched.budget 
+                      ? errors.budget 
+                      : formData.budget 
+                        ? `Presupuesto: ${formatBudget(formData.budget)}` 
+                        : 'Ingrese solo números (máximo $999,999,999.99)'
+                  }
                   placeholder="$0.00"
+                  inputProps={{
+                    inputMode: 'decimal',
+                    pattern: '[0-9]*',
+                  }}
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       backgroundColor: isDarkMode ? '#3a3a3a' : '#ffffff',

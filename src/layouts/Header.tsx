@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import iniciarSesionImg from '../assets/Img/iniciarsesion.png';
 import cerrarSesionImg from '../assets/Img/CerrarSesion.png';
 import NotificationSystem from '../components/NotificationSystem';
-import LogoutConfirmDialog from '../components/LogoutConfirmDialog';
+import CustomAlert from '../components/CustomAlert';
 
 interface HeaderProps {
   onSidebarToggle: () => void;
@@ -12,9 +11,10 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
   const { user, logout, isDarkMode, toggleDarkMode } = useAppContext();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showLogoutAlert, setShowLogoutAlert] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -22,6 +22,17 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
 
   const closeMenu = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    setShowLogoutAlert(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    closeMenu();
+    setShowLogoutAlert(false);
+    navigate('/');
   };
 
   return (
@@ -39,6 +50,24 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
         <Link to="/" className="logo">
           SIP - Sistema Integral de Proveedores
         </Link>
+        
+        {/* User Info Section */}
+        {user && (
+          <div className="user-info-section">
+            <div className="user-avatar">
+              <span className="user-avatar-text">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="user-details">
+              <span className="user-name">{user.name}</span>
+              <span className="user-role">{user.role === 'admin' ? 'Administrador' : 
+                user.role === 'provider' ? 'Proveedor' : 
+                user.role === 'purchases' ? 'Compras' : 
+                user.role === 'finance' ? 'Finanzas' : user.role}</span>
+            </div>
+          </div>
+        )}
         
         {/* Mobile menu button */}
         <button 
@@ -64,7 +93,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
           
           {user ? (
             <button 
-              onClick={() => { setShowLogoutConfirm(true); closeMenu(); }}
+              onClick={handleLogout}
               className="logout-image-btn"
               title="Cerrar Sesión"
             >
@@ -75,12 +104,37 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
               />
             </button>
           ) : (
-            <Link to="/dashboard" className="login-image-btn" onClick={closeMenu}>
-              <img 
-                src={iniciarSesionImg} 
-                alt="Iniciar Sesión" 
-                className={`login-image ${isDarkMode ? 'dark-mode' : ''}`}
-              />
+            <Link to="/login" className="login-icon-btn" onClick={closeMenu}>
+              <svg 
+                width="28" 
+                height="28" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  color: isDarkMode ? '#60a5fa' : '#6366f1',
+                  transition: 'all 0.2s ease',
+                }}
+                className="login-svg"
+              >
+                {/* Círculo de la cabeza */}
+                <circle 
+                  cx="12" 
+                  cy="8" 
+                  r="4" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  fill="none"
+                />
+                {/* Cuerpo */}
+                <path 
+                  d="M20 21c0-4.418-3.582-8-8-8s-8 3.582-8 8" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
             </Link>
           )}
           
@@ -123,7 +177,7 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
           
           {user ? (
             <button 
-              onClick={() => { setShowLogoutConfirm(true); closeMenu(); }}
+              onClick={handleLogout}
               className="logout-image-btn"
               title="Cerrar Sesión"
             >
@@ -134,12 +188,37 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
               />
             </button>
           ) : (
-            <Link to="/dashboard" className="login-image-btn" onClick={closeMenu}>
-              <img 
-                src={iniciarSesionImg} 
-                alt="Iniciar Sesión" 
-                className={`login-image ${isDarkMode ? 'dark-mode' : ''}`}
-              />
+            <Link to="/login" className="login-icon-btn" onClick={closeMenu}>
+              <svg 
+                width="28" 
+                height="28" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                xmlns="http://www.w3.org/2000/svg"
+                style={{
+                  color: isDarkMode ? '#60a5fa' : '#6366f1',
+                  transition: 'all 0.2s ease',
+                }}
+                className="login-svg"
+              >
+                {/* Círculo de la cabeza */}
+                <circle 
+                  cx="12" 
+                  cy="8" 
+                  r="4" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  fill="none"
+                />
+                {/* Cuerpo */}
+                <path 
+                  d="M20 21c0-4.418-3.582-8-8-8s-8 3.582-8 8" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
+                />
+              </svg>
             </Link>
           )}
           
@@ -174,15 +253,15 @@ const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
         onClose={() => setShowNotifications(false)}
       />
 
-      {/* Logout Confirm Dialog */}
-      <LogoutConfirmDialog
-        open={showLogoutConfirm}
-        onClose={() => setShowLogoutConfirm(false)}
-        onConfirm={() => {
-          logout();
-          setShowLogoutConfirm(false);
-          closeMenu();
-        }}
+      {/* Logout Alert */}
+      <CustomAlert
+        isOpen={showLogoutAlert}
+        onClose={() => setShowLogoutAlert(false)}
+        title="Cerrar Sesión"
+        message="¿Estás seguro de que quieres cerrar sesión? Serás redirigido a la página de inicio."
+        type="warning"
+        onConfirm={confirmLogout}
+        confirmText="Sí, Cerrar Sesión"
       />
     </header>
   );

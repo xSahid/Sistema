@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -33,64 +33,78 @@ const steps = ['Información Fiscal', 'Datos de Contacto', 'Documentos Requerido
 const ProviderRegistration: React.FC = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useAppContext();
-  // Force dark mode update - v2
-  const [activeStep, setActiveStep] = useState(0);
-  const [formData, setFormData] = useState({
+  
+  // Estados independientes para cada paso
+  const [step1Data, setStep1Data] = useState({
     companyName: '',
     taxId: '',
-    businessType: '',
     address: '',
-    city: '',
-    state: '',
-    zipCode: '',
+  });
+
+  const [step2Data, setStep2Data] = useState({
     phone: '',
     email: '',
-    website: '',
     contactPerson: '',
-    contactPhone: '',
-    contactEmail: '',
-    bankAccount: '',
-    bankName: '',
-    documents: [] as File[],
   });
+
+  const [activeStep, setActiveStep] = useState(0);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleNext = () => {
     if (validateStep()) {
+      // Limpiar errores al avanzar
+      setErrors({});
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
   };
 
   const handleBack = () => {
+    // Limpiar errores al retroceder
+    setErrors({});
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, value: string, step: number) => {
+    // Actualizar el estado correspondiente al paso
+    if (step === 1) {
+      setStep1Data(prev => ({ ...prev, [field]: value }));
+    } else if (step === 2) {
+      setStep2Data(prev => ({ ...prev, [field]: value }));
+    }
+    
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
+
+  // Función para limpiar completamente el formulario
+  const resetForm = () => {
+    setStep1Data({ companyName: '', taxId: '', address: '' });
+    setStep2Data({ phone: '', email: '', contactPerson: '' });
+    setActiveStep(0);
+    setErrors({});
+    setShowSuccess(false);
+  };
+
+  // Limpiar formulario al montar el componente (recargar página)
+  useEffect(() => {
+    resetForm();
+  }, []);
 
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
 
     switch (activeStep) {
       case 0:
-        if (!formData.companyName) newErrors.companyName = 'Nombre de empresa es requerido';
-        if (!formData.taxId) newErrors.taxId = 'RFC es requerido';
-        if (!formData.businessType) newErrors.businessType = 'Tipo de negocio es requerido';
+        if (!step1Data.companyName) newErrors.companyName = 'Nombre de empresa es requerido';
+        if (!step1Data.taxId) newErrors.taxId = 'RFC es requerido';
+        if (!step1Data.address) newErrors.address = 'Dirección es requerida';
         break;
       case 1:
-        if (!formData.address) newErrors.address = 'Dirección es requerida';
-        if (!formData.city) newErrors.city = 'Ciudad es requerida';
-        if (!formData.state) newErrors.state = 'Estado es requerido';
-        break;
-      case 2:
-        if (!formData.phone) newErrors.phone = 'Teléfono es requerido';
-        if (!formData.email) newErrors.email = 'Email es requerido';
-        if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+        if (!step2Data.phone) newErrors.phone = 'Teléfono es requerido';
+        if (!step2Data.email) newErrors.email = 'Email es requerido';
+        if (step2Data.email && !/\S+@\S+\.\S+/.test(step2Data.email)) {
           newErrors.email = 'Email inválido';
         }
         break;
@@ -106,6 +120,8 @@ const ProviderRegistration: React.FC = () => {
       setTimeout(() => {
         setShowSuccess(true);
         setTimeout(() => {
+          // Limpiar todo el formulario y reiniciar al paso 0
+          resetForm();
           navigate('/dashboard');
         }, 2000);
       }, 1000);
@@ -162,8 +178,8 @@ const ProviderRegistration: React.FC = () => {
                               <TextField
                   fullWidth
                   label="RFC"
-                  value={formData.taxId}
-                  onChange={(e) => handleInputChange('taxId', e.target.value)}
+                  value={step1Data.taxId}
+                  onChange={(e) => handleInputChange('taxId', e.target.value, 1)}
                   error={!!errors.taxId}
                   helperText={errors.taxId}
                   required
@@ -204,8 +220,8 @@ const ProviderRegistration: React.FC = () => {
               <TextField
                 fullWidth
                 label="Razón Social"
-                value={formData.companyName}
-                onChange={(e) => handleInputChange('companyName', e.target.value)}
+                value={step1Data.companyName}
+                onChange={(e) => handleInputChange('companyName', e.target.value, 1)}
                 error={!!errors.companyName}
                 helperText={errors.companyName}
                 required
@@ -246,8 +262,8 @@ const ProviderRegistration: React.FC = () => {
               <TextField
                 fullWidth
                 label="Domicilio Fiscal"
-                value={formData.address}
-                onChange={(e) => handleInputChange('address', e.target.value)}
+                value={step1Data.address}
+                onChange={(e) => handleInputChange('address', e.target.value, 1)}
                 error={!!errors.address}
                 helperText={errors.address}
                 required
@@ -338,8 +354,8 @@ const ProviderRegistration: React.FC = () => {
               <TextField
                 fullWidth
                 label="Teléfono de la Empresa"
-                value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                value={step2Data.phone}
+                onChange={(e) => handleInputChange('phone', e.target.value, 2)}
                 error={!!errors.phone}
                 helperText={errors.phone}
                 required
@@ -381,8 +397,8 @@ const ProviderRegistration: React.FC = () => {
                 fullWidth
                 label="Email de la Empresa"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                value={step2Data.email}
+                onChange={(e) => handleInputChange('email', e.target.value, 2)}
                 error={!!errors.email}
                 helperText={errors.email}
                 required
@@ -423,8 +439,8 @@ const ProviderRegistration: React.FC = () => {
               <TextField
                 fullWidth
                 label="Persona de Contacto"
-                value={formData.contactPerson}
-                onChange={(e) => handleInputChange('contactPerson', e.target.value)}
+                value={step2Data.contactPerson}
+                onChange={(e) => handleInputChange('contactPerson', e.target.value, 2)}
                 variant="outlined"
                 sx={{
                   gridColumn: { xs: '1', md: '1 / -1' },
@@ -645,7 +661,7 @@ const ProviderRegistration: React.FC = () => {
                   color: isDarkMode ? '#f8fafc' : '#1f2937',
                   fontWeight: 500,
                 }}>
-                  {formData.taxId || 'No especificado'}
+                  {step1Data.taxId || 'No especificado'}
                 </Typography>
               </Box>
               <Box sx={{
@@ -665,7 +681,7 @@ const ProviderRegistration: React.FC = () => {
                   color: isDarkMode ? '#f8fafc' : '#1f2937',
                   fontWeight: 500,
                 }}>
-                  {formData.companyName || 'No especificado'}
+                  {step1Data.companyName || 'No especificado'}
                 </Typography>
               </Box>
               <Box sx={{
@@ -685,7 +701,7 @@ const ProviderRegistration: React.FC = () => {
                   color: isDarkMode ? '#f8fafc' : '#1f2937',
                   fontWeight: 500,
                 }}>
-                  {formData.email || 'No especificado'}
+                  {step2Data.email || 'No especificado'}
                 </Typography>
               </Box>
               <Box sx={{
@@ -705,7 +721,7 @@ const ProviderRegistration: React.FC = () => {
                   color: isDarkMode ? '#f8fafc' : '#1f2937',
                   fontWeight: 500,
                 }}>
-                  {formData.phone || 'No especificado'}
+                  {step2Data.phone || 'No especificado'}
                 </Typography>
               </Box>
             </Box>
@@ -756,6 +772,21 @@ const ProviderRegistration: React.FC = () => {
               }}
             >
               Volver
+            </Button>
+            <Button
+              onClick={resetForm}
+              variant="outlined"
+              sx={{
+                color: isDarkMode ? '#ef4444' : '#dc2626',
+                borderColor: isDarkMode ? '#ef4444' : '#dc2626',
+                fontWeight: 500,
+                '&:hover': {
+                  backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.1)' : 'rgba(220, 38, 38, 0.1)',
+                  borderColor: isDarkMode ? '#f87171' : '#f87171',
+                },
+              }}
+            >
+              Reiniciar Formulario
             </Button>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>

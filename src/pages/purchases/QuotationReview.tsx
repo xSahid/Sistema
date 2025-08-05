@@ -117,23 +117,34 @@ const mockQuotations: Quotation[] = [
 ];
 
 const QuotationReview: React.FC = () => {
-  const { isDarkMode } = useAppContext();
+  const { isDarkMode, user } = useAppContext();
   const [quotations] = useState<Quotation[]>(mockQuotations);
   const [suppliers] = useState<Supplier[]>(mockSuppliers);
   const [selectedQuotation, setSelectedQuotation] = useState<Quotation | null>(null);
   const [comparisonMode, setComparisonMode] = useState(false);
   const [selectedQuotations, setSelectedQuotations] = useState<string[]>([]);
 
+  // Verificar si el usuario tiene permisos de administrador
+  const isAdmin = user?.role === 'admin';
+
   const getSupplierById = (supplierId: string) => {
     return suppliers.find(s => s.id === supplierId);
   };
 
   const handleApproveQuotation = (_quotationId: string) => {
+    if (!isAdmin) {
+      alert('Solo los administradores pueden aprobar cotizaciones');
+      return;
+    }
     // Simulate approval
     alert('Cotización aprobada exitosamente');
   };
 
   const handleRejectQuotation = (_quotationId: string) => {
+    if (!isAdmin) {
+      alert('Solo los administradores pueden rechazar cotizaciones');
+      return;
+    }
     // Simulate rejection
     alert('Cotización rechazada');
   };
@@ -227,6 +238,30 @@ const QuotationReview: React.FC = () => {
               }}>
                 Paso 3: Revisión y Aprobación de Cotizaciones (Área de Compras)
               </Typography>
+              {isAdmin && (
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#34d399' : '#10b981',
+                  fontWeight: 600,
+                  mt: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                }}>
+                  ✅ Permisos de Administrador - Puede aprobar/rechazar cotizaciones
+                </Typography>
+              )}
+              {!isAdmin && (
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#f59e0b' : '#d97706',
+                  fontWeight: 600,
+                  mt: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                }}>
+                  ⚠️ Solo administradores pueden aprobar/rechazar cotizaciones
+                </Typography>
+              )}
             </Box>
             <Button
               variant="contained"
@@ -507,7 +542,7 @@ const QuotationReview: React.FC = () => {
                       >
                         {selectedQuotations.includes(quotation.id) ? 'Quitar' : 'Comparar'}
                       </Button>
-                      {quotation.status === 'submitted' && (
+                      {quotation.status === 'submitted' && isAdmin && (
                         <>
                           <Button
                             size="small"
@@ -536,6 +571,15 @@ const QuotationReview: React.FC = () => {
                             Rechazar
                           </Button>
                         </>
+                      )}
+                      {quotation.status === 'submitted' && !isAdmin && (
+                        <Typography variant="body2" sx={{
+                          color: isDarkMode ? '#64748b' : '#6b7280',
+                          fontStyle: 'italic',
+                          fontSize: '0.875rem',
+                        }}>
+                          Solo administradores pueden aprobar/rechazar
+                        </Typography>
                       )}
                     </CardActions>
                   </Card>
@@ -771,7 +815,7 @@ const QuotationReview: React.FC = () => {
               >
                 Cerrar
               </Button>
-              {selectedQuotation.status === 'submitted' && (
+              {selectedQuotation.status === 'submitted' && isAdmin && (
                 <>
                   <Button
                     sx={{
@@ -801,6 +845,15 @@ const QuotationReview: React.FC = () => {
                     Aprobar
                   </Button>
                 </>
+              )}
+              {selectedQuotation.status === 'submitted' && !isAdmin && (
+                <Typography variant="body2" sx={{
+                  color: isDarkMode ? '#64748b' : '#6b7280',
+                  fontStyle: 'italic',
+                  fontSize: '0.875rem',
+                }}>
+                  Solo administradores pueden aprobar/rechazar cotizaciones
+                </Typography>
               )}
             </DialogActions>
           </>

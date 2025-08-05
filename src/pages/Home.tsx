@@ -149,7 +149,7 @@ const Home: React.FC = () => {
               <p style={{ color: 'var(--text-secondary)', marginBottom: '1rem' }}>
                 Genera una nueva solicitud de cotización.
               </p>
-              <Link to="/purchases/create-rfq" className="btn btn-primary" style={{
+              <Link to="/purchases/new-request" className="btn btn-primary" style={{
                 backgroundColor: '#4a90e2',
                 color: '#fff',
                 padding: '0.5rem 1.2rem',

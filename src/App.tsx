@@ -2,7 +2,6 @@ import React from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import router from './routes/AppRoutes';
-import ErrorBoundary from './components/ErrorBoundary';
 import './styles/index.css';
 
 const AppContent: React.FC = () => {
@@ -18,11 +17,9 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   return (
-    <ErrorBoundary>
-      <AppProvider>
-        <AppContent />
-      </AppProvider>
-    </ErrorBoundary>
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 };
 
