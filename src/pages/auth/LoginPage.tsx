@@ -15,8 +15,9 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { Lock, Business, AdminPanelSettings, Person } from '@mui/icons-material';
+import { Lock, AdminPanelSettings, Person } from '@mui/icons-material';
 import CustomAlert from '../../components/CustomAlert';
+import IngenieroIcon from '../../assets/Img/ingeniero.png';
 
 // Credenciales del administrador
 const ADMIN_CREDENTIALS = {
@@ -177,15 +178,22 @@ const LoginPage: React.FC = () => {
           }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 4 }}>
               <Avatar sx={{ 
-                bgcolor: isDarkMode ? '#60a5fa' : '#6366f1',
+                bgcolor: 'transparent',
                 mb: 3, 
-                width: 80, 
-                height: 80,
-                boxShadow: isDarkMode 
-                  ? '0 8px 32px rgba(96, 165, 250, 0.3)'
-                  : '0 8px 32px rgba(99, 102, 241, 0.3)',
+                width: 100, 
+                height: 100,
+                boxShadow: 'none',
               }}>
-                <Business sx={{ fontSize: 40 }} />
+                <img 
+                  src={IngenieroIcon} 
+                  alt="SIP Sistema" 
+                  style={{ 
+                    width: '80px', 
+                    height: '80px', 
+                    objectFit: 'contain',
+                    filter: isDarkMode ? 'brightness(1.2) contrast(1.1)' : 'none'
+                  }} 
+                />
               </Avatar>
               <Typography 
                 variant="h4" 

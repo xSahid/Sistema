@@ -8860,3 +8860,55 @@ body {
     font-size: 9px;
   }
 }
+
+/* Estilos para iconos adaptados al modo oscuro */
+.sidebar-nav-icon img {
+  filter: brightness(1) contrast(1);
+  transition: all 0.3s ease;
+}
+
+/* Modo oscuro - ajustar iconos para mejor visibilidad */
+[data-theme="dark"] .sidebar-nav-icon img {
+  filter: brightness(1.2) contrast(1.1) saturate(1.1);
+}
+
+/* Hover effects para iconos en modo oscuro */
+[data-theme="dark"] .sidebar-nav-link:hover .sidebar-nav-icon img {
+  filter: brightness(1.4) contrast(1.2) saturate(1.2);
+  transform: scale(1.05);
+}
+
+/* Icono activo en modo oscuro */
+[data-theme="dark"] .sidebar-nav-link.active .sidebar-nav-icon img {
+  filter: brightness(1.3) contrast(1.15) saturate(1.15);
+}
+
+/* Estilos específicos para el icono de navegación principal */
+.sidebar-icon img {
+  filter: brightness(1) contrast(1);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .sidebar-icon img {
+  filter: brightness(1.3) contrast(1.1) saturate(1.1);
+}
+
+[data-theme="dark"] .sidebar-icon:hover img {
+  filter: brightness(1.5) contrast(1.2) saturate(1.2);
+  transform: scale(1.05);
+}
+
+/* Estilos para el icono de invitado */
+.guest-icon img {
+  filter: brightness(1) contrast(1);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .guest-icon img {
+  filter: brightness(1.2) contrast(1.1) saturate(1.1);
+}
+
+[data-theme="dark"] .guest-info:hover .guest-icon img {
+  filter: brightness(1.4) contrast(1.2) saturate(1.2);
+  transform: scale(1.05);
+}

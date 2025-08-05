@@ -1,6 +1,12 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import CursorIcon from '../assets/Img/cursor.png';
+import InicioIcon from '../assets/Img/pagina-de-inicio.png';
+import ContactoIcon from '../assets/Img/telefono.png';
+import DocumentosIcon from '../assets/Img/Documentos.png';
+import UsuarioIcon from '../assets/Img/usuario.png';
+import InvitadoIcon from '../assets/Img/Usuariio.png';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -15,17 +21,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
+  const renderIcon = (iconType: string) => {
+    const iconStyle = { width: '20px', height: '20px', objectFit: 'contain' as const };
+    
+    switch (iconType) {
+      case 'inicio':
+        return <img src={InicioIcon} alt="Inicio" style={iconStyle} />;
+      case 'contacto':
+        return <img src={ContactoIcon} alt="Contacto" style={iconStyle} />;
+      case 'registro':
+        return <img src={DocumentosIcon} alt="Registro" style={iconStyle} />;
+      case 'login':
+        return <img src={UsuarioIcon} alt="Login" style={iconStyle} />;
+      default:
+        return <span>{iconType}</span>;
+    }
+  };
+
   const navigationItems = [
     // Páginas públicas (solo cuando NO está autenticado)
-    { path: '/', label: 'Inicio', icon: '🏠', public: true, guestOnly: true },
+    { path: '/', label: 'Inicio', icon: 'inicio', public: true, guestOnly: true },
     { path: '/about', label: 'Acerca de', icon: 'ℹ️', public: true, guestOnly: true },
-    { path: '/contact', label: 'Contacto', icon: '📞', public: true, guestOnly: true },
+    { path: '/contact', label: 'Contacto', icon: 'contacto', public: true, guestOnly: true },
     
     // Login (solo cuando no hay usuario)
-    { path: '/login', label: 'Iniciar Sesión', icon: '🔐', public: true, guestOnly: true },
+    { path: '/login', label: 'Iniciar Sesión', icon: 'login', public: true, guestOnly: true },
     
     // Registro de proveedores (solo cuando NO está autenticado)
-    { path: '/providers/registration', label: 'Registrarse como Proveedor', icon: '📝', public: true, guestOnly: true },
+    { path: '/providers/registration', label: 'Registrarse como Proveedor', icon: 'registro', public: true, guestOnly: true },
     
     // Dashboard de proveedores
     { path: '/providers/dashboard', label: 'Dashboard Proveedor', icon: '📊', role: 'provider' },
@@ -99,7 +122,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h3 className="sidebar-title">
-            <span className="sidebar-icon">🧭</span>
+            <span className="sidebar-icon">
+              <img 
+                src={CursorIcon} 
+                alt="Navegación" 
+                style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+              />
+            </span>
             Navegación
           </h3>
           <button 
@@ -128,7 +157,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
                         className={`sidebar-nav-link ${isActive(item.path) ? 'active' : ''}`}
                         onClick={onClose}
                       >
-                        <span className="sidebar-nav-icon">{item.icon}</span>
+                        <span className="sidebar-nav-icon">{renderIcon(item.icon)}</span>
                         <span className="sidebar-nav-label">{item.label}</span>
                       </Link>
                     </li>
@@ -153,7 +182,13 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose }) => {
               </>
             ) : (
               <div className="guest-info">
-                <span className="guest-icon">👤</span>
+                <span className="guest-icon">
+                  <img 
+                    src={InvitadoIcon} 
+                    alt="Invitado" 
+                    style={{ width: '20px', height: '20px', objectFit: 'contain' as const }}
+                  />
+                </span>
                 <span className="guest-text">Invitado</span>
               </div>
             )}
